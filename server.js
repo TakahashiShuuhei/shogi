@@ -8,7 +8,6 @@ const port = process.env.PORT || 3000;
 
 // ルートへのリクエストに対して "Hello, world!" を返す
 app.get('/', (req, res) => {
-  sendEmail();
   res.send('Hello, world!');
 });
 
