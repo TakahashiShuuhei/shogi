@@ -3,10 +3,13 @@
   "version": "1.0.0",
   "description": "A simple web app using Express",
   "main": "server.js",
+  "type": "module",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
+    "@sendgrid/mail": "^8.1.4",
+    "dotenv": "^16.4.7",
     "express": "^4.18.2"
   }
 }
