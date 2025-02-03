@@ -1,15 +1,11 @@
 // dotenv を使って .env ファイルから環境変数を読み込み（ローカル開発時のみ）
 import dotenv from 'dotenv';
 if (process.env.NODE_ENV !== 'production') {
-  console.log('dotenv.config()');
   dotenv.config();
 }
 
 import sgMail from '@sendgrid/mail';
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-
-console.log('process.env.SENDGRID_API_KEY');
-console.log(process.env.SENDGRID_API_KEY);
 
 export async function sendEmail() {
   try {
