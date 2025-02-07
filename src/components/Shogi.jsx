@@ -5,11 +5,11 @@ import ShogiGame from '../domain/shogi';
 const Shogi = ({ game, onStateChange }) => {
   const [board, setBoard] = useState(game.getBoard());
   const [hands, setHands] = useState(game.hands);
-  const [selectedPiece, setSelectedPiece] = useState(null); // 選択された駒の座標
-  const [availableMoves, setAvailableMoves] = useState([]); // 移動可能なマスの配列
+  const [selectedPiece, setSelectedPiece] = useState(null);
+  const [availableMoves, setAvailableMoves] = useState([]);
   
   // 固定サイズを設定
-  const cellSize = 80; // マスのサイズを80pxに固定
+  const cellSize = 80;
   const pieceScale = cellSize / 140 * 0.85;
 
   // 駒の種類から画像の位置を計算する関数
@@ -52,11 +52,21 @@ const Shogi = ({ game, onStateChange }) => {
       return;
     }
 
-    // クリックされた駒が現在の手番の駒かチェック
     if (piece.owner === game.turn) {
       setSelectedPiece({ row, col });
-      // 移動可能なマスを取得
       const moves = game.getAvailableMoves({ row, col });
+      setAvailableMoves(moves);
+    } else {
+      setSelectedPiece(null);
+      setAvailableMoves([]);
+    }
+  };
+
+  // 持ち駒がクリックされたときの処理
+  const handleHandPieceClick = (pieceType, owner) => {
+    if (owner === game.turn) {
+      setSelectedPiece({ hand: true, owner, pieceType });
+      const moves = game.getAvailableMoves({ hand: true, owner, pieceType });
       setAvailableMoves(moves);
     } else {
       setSelectedPiece(null);
@@ -87,7 +97,8 @@ const Shogi = ({ game, onStateChange }) => {
 
   // マスの背景色を決定する関数
   const getCellBackgroundColor = (row, col) => {
-    if (selectedPiece && selectedPiece.row === row && selectedPiece.col === col) {
+    if (selectedPiece && !selectedPiece.hand && 
+        selectedPiece.row === row && selectedPiece.col === col) {
       return '#FFFF00'; // 選択された駒のマスを黄色に
     }
     if (availableMoves.some(move => move.to.row === row && move.to.col === col)) {
@@ -113,11 +124,19 @@ const Shogi = ({ game, onStateChange }) => {
       alignSelf: isReversed ? 'flex-start' : 'flex-end'
     }}>
       {pieces.map((piece, index) => (
-        <div key={`${piece.type}-${index}`} style={{
-          width: `${cellSize}px`,
-          height: `${cellSize}px`,
-          position: 'relative'
-        }}>
+        <div 
+          key={`${piece.type}-${index}`}
+          onClick={() => handleHandPieceClick(piece.type, owner)}
+          style={{
+            width: `${cellSize}px`,
+            height: `${cellSize}px`,
+            position: 'relative',
+            cursor: owner === game.turn ? 'pointer' : 'default',
+            backgroundColor: selectedPiece?.hand && 
+                           selectedPiece.owner === owner && 
+                           selectedPiece.pieceType === piece.type ? 
+                           '#FFFF00' : 'transparent'
+          }}>
           <div style={{
             position: 'absolute',
             width: '140px',
