@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import ShogiGame from '../domain/shogi';
 
-const Shogi = () => {
-  const game = new ShogiGame();
+// PropTypesを使用しないバージョン
+const Shogi = ({ game, onStateChange }) => {
   const [board, setBoard] = useState(game.getBoard());
+  const [hands, setHands] = useState(game.hands);
   
   // 固定サイズを設定
   const cellSize = 80; // マスのサイズを80pxに固定
@@ -32,6 +33,63 @@ const Shogi = () => {
     return { x, y };
   };
 
+  // ゲームの状態が変更されたときの処理
+  const handleStateChange = () => {
+    setBoard(game.getBoard());
+    if (onStateChange) {
+      onStateChange(game);
+    }
+  };
+
+  // 駒台のコンポーネント
+  const PieceStand = ({ pieces, owner, isReversed }) => (
+    <div style={{
+      width: `${cellSize * 2}px`,
+      minHeight: `${cellSize * 5}px`,
+      backgroundColor: '#DEB887',
+      padding: '8px',
+      border: '4px solid #855',
+      borderRadius: '4px',
+      margin: '8px',
+      display: 'flex',
+      flexWrap: 'wrap',
+      gap: '4px',
+      alignContent: isReversed ? 'flex-end' : 'flex-start',
+      alignSelf: isReversed ? 'flex-start' : 'flex-end'
+    }}>
+      {pieces.map((piece, index) => (
+        <div key={`${piece.type}-${index}`} style={{
+          width: `${cellSize}px`,
+          height: `${cellSize}px`,
+          position: 'relative'
+        }}>
+          <div style={{
+            position: 'absolute',
+            width: '140px',
+            height: '148px',
+            backgroundImage: 'url(/public/piece.png)',
+            backgroundSize: '1120px 592px',
+            backgroundRepeat: 'no-repeat',
+            ...(() => {
+              const pos = getPieceImagePosition({ ...piece, owner: 'sente' });
+              return pos ? {
+                backgroundPosition: `${pos.x}px ${pos.y}px`,
+                transform: isReversed ? 
+                  `scale(${pieceScale}) rotate(180deg)` :
+                  `scale(${pieceScale})`,
+                transformOrigin: 'center center',
+                left: '50%',
+                top: '50%',
+                marginLeft: '-70px',
+                marginTop: '-74px',
+              } : {};
+            })()
+          }} />
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <div style={{ 
       padding: '2rem',
@@ -40,54 +98,68 @@ const Shogi = () => {
       alignItems: 'center'
     }}>
       <h1>将棋盤</h1>
-      <div style={{ 
-        display: 'grid',
-        gridTemplateColumns: `repeat(9, ${cellSize}px)`,
-        gap: '1px',
-        backgroundColor: '#ccc',
-        padding: '12px',
-        border: '8px solid #855',
-        borderRadius: '4px',
-        boxShadow: '2px 2px 10px rgba(0,0,0,0.3)'
+      <div style={{
+        display: 'flex',
+        alignItems: 'stretch',
+        gap: '16px',
+        height: `${cellSize * 9 + 40}px`
       }}>
-        {board.map((row, rowIndex) => 
-          row.map((piece, colIndex) => (
-            <div key={`${rowIndex}-${colIndex}`} style={{
-              width: `${cellSize}px`,
-              height: `${cellSize}px`,
-              backgroundColor: '#FFE4B5',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              position: 'relative',
-              overflow: 'hidden',
-              boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.1)'
-            }}>
-              {piece && (
-                <div style={{
-                  position: 'absolute',
-                  width: '140px',
-                  height: '148px',
-                  backgroundImage: 'url(/public/piece.png)',
-                  backgroundSize: '1120px 592px',
-                  backgroundRepeat: 'no-repeat',
-                  ...(() => {
-                    const pos = getPieceImagePosition(piece);
-                    return pos ? {
-                      backgroundPosition: `${pos.x}px ${pos.y}px`,
-                      transform: `scale(${pieceScale})`,
-                      transformOrigin: 'center center',
-                      left: '50%',
-                      top: '50%',
-                      marginLeft: '-70px',
-                      marginTop: '-74px',
-                    } : {};
-                  })()
-                }} />
-              )}
-            </div>
-          ))
-        )}
+        {/* 後手の駒台 */}
+        <PieceStand pieces={hands.gote} owner="gote" isReversed={true} />
+        
+        {/* 将棋盤 */}
+        <div style={{ 
+          display: 'grid',
+          gridTemplateColumns: `repeat(9, ${cellSize}px)`,
+          gap: '1px',
+          backgroundColor: '#ccc',
+          padding: '12px',
+          border: '8px solid #855',
+          borderRadius: '4px',
+          boxShadow: '2px 2px 10px rgba(0,0,0,0.3)'
+        }}>
+          {board.map((row, rowIndex) => 
+            row.map((piece, colIndex) => (
+              <div key={`${rowIndex}-${colIndex}`} style={{
+                width: `${cellSize}px`,
+                height: `${cellSize}px`,
+                backgroundColor: '#FFE4B5',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                position: 'relative',
+                overflow: 'hidden',
+                boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.1)'
+              }}>
+                {piece && (
+                  <div style={{
+                    position: 'absolute',
+                    width: '140px',
+                    height: '148px',
+                    backgroundImage: 'url(/public/piece.png)',
+                    backgroundSize: '1120px 592px',
+                    backgroundRepeat: 'no-repeat',
+                    ...(() => {
+                      const pos = getPieceImagePosition(piece);
+                      return pos ? {
+                        backgroundPosition: `${pos.x}px ${pos.y}px`,
+                        transform: `scale(${pieceScale})`,
+                        transformOrigin: 'center center',
+                        left: '50%',
+                        top: '50%',
+                        marginLeft: '-70px',
+                        marginTop: '-74px',
+                      } : {};
+                    })()
+                  }} />
+                )}
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* 先手の駒台 */}
+        <PieceStand pieces={hands.sente} owner="sente" isReversed={false} />
       </div>
       <div style={{ marginTop: '1rem' }}>
         <pre>{JSON.stringify(board, null, 2)}</pre>
