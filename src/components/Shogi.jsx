@@ -5,6 +5,8 @@ import ShogiGame from '../domain/shogi';
 const Shogi = ({ game, onStateChange }) => {
   const [board, setBoard] = useState(game.getBoard());
   const [hands, setHands] = useState(game.hands);
+  const [selectedPiece, setSelectedPiece] = useState(null); // 選択された駒の座標
+  const [availableMoves, setAvailableMoves] = useState([]); // 移動可能なマスの配列
   
   // 固定サイズを設定
   const cellSize = 80; // マスのサイズを80pxに固定
@@ -39,6 +41,59 @@ const Shogi = ({ game, onStateChange }) => {
     if (onStateChange) {
       onStateChange(game);
     }
+  };
+
+  // 駒がクリックされたときの処理
+  const handlePieceClick = (row, col) => {
+    const piece = board[row][col];
+    if (!piece) {
+      setSelectedPiece(null);
+      setAvailableMoves([]);
+      return;
+    }
+
+    // クリックされた駒が現在の手番の駒かチェック
+    if (piece.owner === game.turn) {
+      setSelectedPiece({ row, col });
+      // 移動可能なマスを取得
+      const moves = game.getAvailableMoves({ row, col });
+      setAvailableMoves(moves);
+    } else {
+      setSelectedPiece(null);
+      setAvailableMoves([]);
+    }
+  };
+
+  // マスがクリックされたときの処理
+  const handleCellClick = (row, col) => {
+    // 駒が選択されていない場合は、駒のクリックとして処理
+    if (!selectedPiece) {
+      handlePieceClick(row, col);
+      return;
+    }
+
+    // 移動可能なマスがクリックされたかチェック
+    const isAvailableMove = availableMoves.some(
+      move => move.to.row === row && move.to.col === col
+    );
+
+    if (!isAvailableMove) {
+      // 移動可能なマス以外がクリックされた場合は選択解除
+      setSelectedPiece(null);
+      setAvailableMoves([]);
+    }
+    // TODO: 移動可能なマスがクリックされた場合の処理
+  };
+
+  // マスの背景色を決定する関数
+  const getCellBackgroundColor = (row, col) => {
+    if (selectedPiece && selectedPiece.row === row && selectedPiece.col === col) {
+      return '#FFFF00'; // 選択された駒のマスを黄色に
+    }
+    if (availableMoves.some(move => move.to.row === row && move.to.col === col)) {
+      return '#90EE90'; // 移動可能なマスを薄緑色に
+    }
+    return '#FFE4B5'; // 通常のマスの色
   };
 
   // 駒台のコンポーネント
@@ -120,17 +175,21 @@ const Shogi = ({ game, onStateChange }) => {
         }}>
           {board.map((row, rowIndex) => 
             row.map((piece, colIndex) => (
-              <div key={`${rowIndex}-${colIndex}`} style={{
-                width: `${cellSize}px`,
-                height: `${cellSize}px`,
-                backgroundColor: '#FFE4B5',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                position: 'relative',
-                overflow: 'hidden',
-                boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.1)'
-              }}>
+              <div 
+                key={`${rowIndex}-${colIndex}`} 
+                onClick={() => handleCellClick(rowIndex, colIndex)}
+                style={{
+                  width: `${cellSize}px`,
+                  height: `${cellSize}px`,
+                  backgroundColor: getCellBackgroundColor(rowIndex, colIndex),
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.1)',
+                  cursor: 'pointer' // クリック可能なことを示す
+                }}>
                 {piece && (
                   <div style={{
                     position: 'absolute',
