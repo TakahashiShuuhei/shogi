@@ -4,6 +4,7 @@ import Navigation from './components/Navigation.jsx';
 import Home from './pages/Home.jsx';
 import About from './pages/About.jsx';
 import Users from './pages/Users.jsx';
+import ShogiTest from './pages/ShogiTest.jsx';
 // ... 残りのコードは同じ 
 
 const App = () => {
@@ -14,6 +15,7 @@ const App = () => {
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/users" element={<Users />} />
+        <Route path="/shogi" element={<ShogiTest />} />
       </Routes>
     </div>
   );

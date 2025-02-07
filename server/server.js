@@ -10,6 +10,7 @@ const app = express();
 const PORT = 3000;
 
 app.use(express.static(path.resolve(__dirname, '..', 'build')));
+app.use('/public', express.static(path.resolve(__dirname, '..', 'build/public')));
 
 app.get('*', (req, res) => {
   const context = {};

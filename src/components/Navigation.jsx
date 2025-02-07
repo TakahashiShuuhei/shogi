@@ -8,6 +8,7 @@ const Navigation = () => {
         <li><Link to="/">ホーム</Link></li>
         <li><Link to="/about">About</Link></li>
         <li><Link to="/users">ユーザー一覧</Link></li>
+        <li><Link to="/shogi">将棋テスト</Link></li>
       </ul>
     </nav>
   );
