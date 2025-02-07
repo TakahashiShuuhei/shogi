@@ -104,6 +104,13 @@ class ShogiGame {
     return this.moveHistory;
   }
 
+  // 移動先に自軍の駒がないかチェック
+  _isTargetAvailable(target, owner=this.turn) {
+    if (!this._isValidCoordinate(target)) return false;
+    const piece = this.board[target.row][target.col];
+    return !piece || piece.owner !== owner;
+  }
+
   /**
    * 指定された座標の駒の利用可能な移動先一覧を取得します
    * @param {Object} coord - 移動元の座標または持ち駒情報
@@ -192,7 +199,7 @@ class ShogiGame {
     let moves = [];
     if (piece.type === '歩') {  // 歩兵：前方1マス
       const target = { row: coord.row + forward, col: coord.col };
-      if (this._isValidCoordinate(target)) {
+      if (this._isTargetAvailable(target)) {
         moves.push({ from: coord, to: target, canPromote: this._canPromote(piece, coord, target) });
       }
     } else if (piece.type === '王') {  // 王：8方向に1マスずつ
@@ -202,7 +209,7 @@ class ShogiGame {
           if (dx === 0 && dy === 0) continue;
           let nr = coord.row + dx;
           let nc = coord.col + dy;
-          if (this._isValidCoordinate({ row: nr, col: nc }) && (this.board[nr][nc] === null || this.board[nr][nc].owner !== piece.owner)) {
+          if (this._isTargetAvailable({ row: nr, col: nc }) && (this.board[nr][nc] === null || this.board[nr][nc].owner !== piece.owner)) {
             moves.push({ from: coord, to: { row: nr, col: nc } });
           }
         }
@@ -226,7 +233,7 @@ class ShogiGame {
       }
       for (const d of directions) {
         const target = { row: coord.row + d.dr, col: coord.col + d.dc };
-        if (this._isValidCoordinate(target)) {
+        if (this._isTargetAvailable(target)) {
           moves.push({ from: coord, to: target, canPromote: false });
         }
       }
@@ -245,7 +252,7 @@ class ShogiGame {
       }
       for (const d of directions) {
         const target = { row: coord.row + d.dr, col: coord.col + d.dc };
-        if (this._isValidCoordinate(target)) {
+        if (this._isTargetAvailable(target)) {
           moves.push({ from: coord, to: target, canPromote: this._canPromote(piece, coord, target) });
         }
       }
@@ -257,7 +264,7 @@ class ShogiGame {
         { row: coord.row + forward2, col: coord.col + 1 }
       ];
       for (const target of targets) {
-        if (this._isValidCoordinate(target)) {
+        if (this._isTargetAvailable(target)) {
           moves.push({ from: coord, to: target, canPromote: this._canPromote(piece, coord, target) });
         }
       }
@@ -300,7 +307,7 @@ class ShogiGame {
       for (const d of directions) {
         let r = coord.row + d.dr;
         let c = coord.col + d.dc;
-        while (this._isValidCoordinate({ row: r, col: c })) {
+        while (this._isTargetAvailable({ row: r, col: c })) {
           if (this.board[r][c] === null) {
             moves.push({ from: coord, to: { row: r, col: c }, canPromote: this._canPromote(piece, coord, { row: r, col: c }) });
           } else {
@@ -323,7 +330,7 @@ class ShogiGame {
       for (const d of directions) {
         let nr = coord.row + d.dr;
         let nc = coord.col + d.dc;
-        while (this._isValidCoordinate({ row: nr, col: nc })) {
+        while (this._isTargetAvailable({ row: nr, col: nc })) {
           // 空マスの場合
           if (this.board[nr][nc] === null) {
             moves.push({ 
