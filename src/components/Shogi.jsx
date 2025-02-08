@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import ShogiGame from '../domain/shogi';
 
 // PropTypesを使用しないバージョン
-const Shogi = ({ game }) => {
+const Shogi = ({ game, playerTurn, currentTurn }) => {
   const [board, setBoard] = useState(game.getBoard());
   const [hands, setHands] = useState(game.hands);
   const [selectedPiece, setSelectedPiece] = useState(null);
@@ -11,6 +11,9 @@ const Shogi = ({ game }) => {
   // 固定サイズを設定
   const cellSize = 80;
   const pieceScale = cellSize / 140 * 0.85;
+
+  // 操作可能かどうかを判定
+  const canControl = playerTurn && playerTurn === currentTurn;
 
   // 駒の種類から画像の位置を計算する関数
   const getPieceImagePosition = (piece) => {
@@ -37,6 +40,9 @@ const Shogi = ({ game }) => {
 
   // 駒がクリックされたときの処理
   const handlePieceClick = (row, col) => {
+    // 操作不可の場合は何もしない
+    if (!canControl) return;
+
     const piece = board[row][col];
     if (!piece) {
       setSelectedPiece(null);
@@ -56,6 +62,9 @@ const Shogi = ({ game }) => {
 
   // 持ち駒がクリックされたときの処理
   const handleHandPieceClick = (pieceType, owner) => {
+    // 操作不可の場合は何もしない
+    if (!canControl) return;
+
     if (owner === game.turn) {
       setSelectedPiece({ hand: true, owner, pieceType });
       const moves = game.getAvailableMoves({ hand: true, owner, pieceType });
@@ -91,12 +100,12 @@ const Shogi = ({ game }) => {
   const getCellBackgroundColor = (row, col) => {
     if (selectedPiece && !selectedPiece.hand && 
         selectedPiece.row === row && selectedPiece.col === col) {
-      return '#FFFF00'; // 選択された駒のマスを黄色に
+      return '#FFFF00';
     }
     if (availableMoves.some(move => move.to.row === row && move.to.col === col)) {
-      return '#90EE90'; // 移動可能なマスを薄緑色に
+      return canControl ? '#90EE90' : '#ccc'; // 操作不可の場合は薄いグレー
     }
-    return '#FFE4B5'; // 通常のマスの色
+    return '#FFE4B5';
   };
 
   // 駒台のコンポーネント
@@ -161,7 +170,8 @@ const Shogi = ({ game }) => {
       padding: '2rem',
       display: 'flex',
       flexDirection: 'column',
-      alignItems: 'center'
+      alignItems: 'center',
+      opacity: canControl ? 1 : 0.7 // 操作不可の場合は全体を少し薄く
     }}>
       <h1>将棋盤</h1>
       <div style={{
