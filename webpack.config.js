@@ -8,7 +8,8 @@ module.exports = {
     'shogi-test': './src/pages/shogi-test/client.js',
     invite: './src/pages/invite/client.js',
     register: './src/pages/register/client.js',
-    error: './src/pages/error/client.js'
+    error: './src/pages/error/client.js',
+    game: './src/pages/games/client.js'
   },
   output: {
     path: path.resolve(__dirname, 'build'),

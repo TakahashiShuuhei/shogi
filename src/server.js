@@ -6,9 +6,11 @@ import ShogiTestApp from './pages/shogi-test/App';
 import InviteApp from './pages/invite/App';
 import ErrorApp from './pages/error/App';
 import RegisterApp from './pages/register/App';
-import { sql } from './lib/db';
+import GameApp from './pages/games/App';
+import client from './lib/db';
 import { generateToken } from './lib/token';
 import { sendEmail } from './lib/mail';
+import ShogiGame from './domain/shogi';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -143,6 +145,88 @@ app.post('/api/invite', async (req, res) => {
       success: false,
       message: 'メール送信に失敗しました'
     });
+  }
+});
+
+// 新規対局作成エンドポイント
+app.post('/api/games', async (req, res) => {
+  try {
+    const { userEmail, opponent, preferredTurn } = req.body;
+
+    if (!userEmail) {
+      return res.status(401).json({
+        success: false,
+        message: 'ログインが必要です'
+      });
+    }
+
+    // 手番の決定
+    let sente, gote;
+    if (preferredTurn === 'random') {
+      // ランダムに決定
+      if (Math.random() < 0.5) {
+        sente = userEmail;
+        gote = opponent;
+      } else {
+        sente = opponent;
+        gote = userEmail;
+      }
+    } else {
+      // 希望通りに設定
+      sente = preferredTurn === 'sente' ? userEmail : opponent;
+      gote = preferredTurn === 'sente' ? opponent : userEmail;
+    }
+
+    // 初期盤面の作成
+    const game = new ShogiGame();
+    const initialState = game.exportState();
+
+    // DBに保存
+    const query = {
+      text: 'INSERT INTO games (sente, gote, board) VALUES ($1, $2, $3) RETURNING id',
+      values: [sente, gote, JSON.stringify(initialState)]
+    };
+
+    const result = await client.query(query);
+
+    res.json({
+      success: true,
+      gameId: result.rows[0].id
+    });
+
+  } catch (error) {
+    console.error('対局作成エラー:', error);
+    res.status(500).json({
+      success: false,
+      message: 'エラーが発生しました'
+    });
+  }
+});
+
+// 対局ページ
+app.get('/games/:id', async (req, res) => {
+  try {
+    const query = {
+      text: 'SELECT * FROM games WHERE id = $1',
+      values: [req.params.id]
+    };
+
+    const result = await client.query(query);
+
+    if (result.rows.length === 0) {
+      return res.redirect('/error?message=' + encodeURIComponent('対局が見つかりません'));
+    }
+
+    const game = result.rows[0];
+
+    renderPage(GameApp, {
+      pageName: 'game',
+      initialData: { game }
+    })(req, res);
+
+  } catch (error) {
+    console.error('対局ページ読み込みエラー:', error);
+    res.redirect('/error?message=' + encodeURIComponent('エラーが発生しました'));
   }
 });
 
