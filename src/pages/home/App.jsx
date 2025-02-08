@@ -79,7 +79,7 @@ export default function HomeApp() {
   if (!userEmail) {
     return (
       <div className="home">
-        <h1>将棋アプリ</h1>
+        <h1>将棋対戦アプリ</h1>
         
         <div className="login-message">
           <p>ログインしていません。</p>
@@ -118,7 +118,7 @@ export default function HomeApp() {
 
   return (
     <div className="home">
-      <h1>将棋アプリ</h1>
+      <h1>将棋対戦アプリ</h1>
 
       <div className="new-game">
         <h2>新規対局</h2>
@@ -192,6 +192,10 @@ export default function HomeApp() {
           width: 100%;
         }
 
+        .new-game > h2 {
+          margin-top: 0;
+        }
+
         .form-group {
           margin-bottom: 1rem;
           width: calc(100% - 100px);
@@ -232,30 +236,63 @@ export default function HomeApp() {
           margin-top: 2rem;
         }
 
+        .games-list ul {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+        }
+
         .game-link {
           display: block;
-          padding: 1rem;
+          padding: 1.5rem;
           margin-bottom: 1rem;
-          border: 1px solid #ddd;
-          border-radius: 4px;
+          border: 1px solid #e0e0e0;
+          border-radius: 8px;
           text-decoration: none;
           color: inherit;
-          transition: background-color 0.3s;
+          transition: all 0.3s ease;
+          background: white;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
         .game-link:hover {
-          background-color: #f5f5f5;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+          border-color: #4CAF50;
         }
 
         .game-info {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: 0.5rem;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 1rem;
+        }
+
+        .game-info > div {
+          padding: 0.5rem;
+          border-radius: 4px;
+          background-color: #f8f9fa;
         }
 
         .label {
           font-weight: bold;
+          color: #666;
           margin-right: 0.5rem;
+        }
+
+        .games-list h2 {
+          margin-bottom: 1.5rem;
+          padding-bottom: 0.5rem;
+          border-bottom: 2px solid #4CAF50;
+          color: #2c3e50;
+        }
+
+        .games-list p {
+          text-align: center;
+          color: #666;
+          padding: 2rem;
+          background: #f8f9fa;
+          border-radius: 8px;
+          border: 1px dashed #ddd;
         }
 
         .error {

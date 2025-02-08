@@ -202,8 +202,6 @@ const Shogi = ({ game, playerTurn, currentTurn, senteEmail, goteEmail, onMove })
       alignItems: 'center',
       opacity: canControl ? 1 : 0.7
     }}>
-      <h1>将棋盤</h1>
-
       {/* 後手のメールアドレス */}
       <div className={`player-email gote ${currentTurn === 'gote' ? 'current' : ''}`}>
         {goteEmail}

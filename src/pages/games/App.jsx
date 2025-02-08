@@ -76,10 +76,18 @@ export default function GameApp({ game }) {
         <a href="/" className="back-link">← 対局一覧へ戻る</a>
         <div className="game-info">
           <h1>対局 #{game.id}</h1>
-          <p>先手: {game.sente}{game.sente === userEmail && ' (あなた)'}</p>
-          <p>後手: {game.gote}{game.gote === userEmail && ' (あなた)'}</p>
-          <p>状態: {game.state}</p>
-          <p>手番: {game.turn === 'sente' ? '先手' : '後手'}</p>
+          <div className="players">
+            <div className="player">
+              <span className="label">先手:</span> 
+              {game.sente}
+              {game.sente === userEmail && ' (あなた)'}
+            </div>
+            <div className="player">
+              <span className="label">後手:</span> 
+              {game.gote}
+              {game.gote === userEmail && ' (あなた)'}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -94,9 +102,10 @@ export default function GameApp({ game }) {
 
       <style>{`
         .game-header {
-          padding: 1rem 2rem;
+          padding: 1.5rem 2rem;
           border-bottom: 1px solid #ddd;
-          margin-bottom: 1rem;
+          margin-bottom: 1.5rem;
+          background: white;
         }
 
         .back-link {
@@ -115,6 +124,32 @@ export default function GameApp({ game }) {
 
         .game-info {
           margin-left: 1rem;
+        }
+
+        .game-info h1 {
+          margin: 0 0 1rem 0;
+          color: #2c3e50;
+          border-bottom: 2px solid #4CAF50;
+          padding-bottom: 0.5rem;
+        }
+
+        .players {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 1rem;
+        }
+
+        .player {
+          padding: 0.8rem;
+          border-radius: 4px;
+          background-color: #f8f9fa;
+          border: 1px solid #e0e0e0;
+        }
+
+        .label {
+          font-weight: bold;
+          color: #666;
+          margin-right: 0.5rem;
         }
       `}</style>
     </div>
