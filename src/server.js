@@ -3,7 +3,10 @@ import renderPage from './server/renderPage';
 import HomeApp from './pages/home/App';
 import AboutApp from './pages/about/App';
 import ShogiTestApp from './pages/shogi-test/App';
+import InviteApp from './pages/invite/App';
 import { sql } from './lib/db';
+import { generateToken } from './lib/token';
+import { sendEmail } from './lib/mail';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -32,6 +35,8 @@ app.get('/shogi-test', async (req, res, next) => {
     next(error);
   }
 });
+
+app.get('/invite', renderPage(InviteApp, { pageName: 'invite' }));
 
 // APIエンドポイント
 app.post('/api/test', async (req, res) => {
@@ -99,6 +104,10 @@ app.post('/api/invite', async (req, res) => {
 
   } catch (error) {
     console.error('招待処理でエラーが発生しました:', error);
+    // エラーの詳細を表示
+    if (error.response && error.response.body) {
+      console.error('SendGrid エラー詳細:', error.response.body);
+    }
     res.status(500).json({
       success: false,
       message: 'メール送信に失敗しました'

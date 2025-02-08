@@ -5,7 +5,8 @@ module.exports = {
   entry: {
     about: './src/pages/about/client.js',
     home: './src/pages/home/client.js',
-    'shogi-test': './src/pages/shogi-test/client.js'
+    'shogi-test': './src/pages/shogi-test/client.js',
+    invite: './src/pages/invite/client.js'
   },
   output: {
     path: path.resolve(__dirname, 'build'),

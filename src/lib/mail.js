@@ -7,7 +7,7 @@ if (process.env.NODE_ENV !== 'production') {
 import sgMail from '@sendgrid/mail';
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-export async function sendEmail({ to, from = process.env.SENDGRID_FROM_EMAIL, subject, text, html }) {
+export async function sendEmail({ to, from = "uhiaha888@gmail.com", subject, text, html }) {
   try {
     const msg = {
       to,
