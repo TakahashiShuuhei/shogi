@@ -197,12 +197,7 @@ class ShogiGame {
     const owner = piece.owner;
     const forward = owner === 'sente' ? -1 : 1;
     let moves = [];
-    if (piece.type === '歩') {  // 歩兵：前方1マス
-      const target = { row: coord.row + forward, col: coord.col };
-      if (this._isTargetAvailable(target)) {
-        moves.push({ from: coord, to: target, canPromote: this._canPromote(piece, coord, target) });
-      }
-    } else if (piece.type === '王') {  // 王：8方向に1マスずつ
+    if (piece.type === '王') {  // 王：8方向に1マスずつ
       // 王の隣接セルを候補とする
       for (let dx = -1; dx <= 1; dx++) {
         for (let dy = -1; dy <= 1; dy++) {
@@ -216,7 +211,7 @@ class ShogiGame {
       }
       // 王の場合、敵の攻撃下になるマスは isSquareSafe で判定して除外する
       moves = moves.filter(move => this.isSquareSafe(move.to.row, move.to.col, piece.owner));
-    } else if (piece.type === '金') {  // 金：先手と後手で動きが多少異なる
+    } else if (piece.type === '金' || (piece.promoted && ['銀', '桂', '香', '歩'].includes(piece.type))) {  // 金：先手と後手で動きが多少異なる
       let directions;
       if (owner === 'sente') {
         directions = [
@@ -236,6 +231,11 @@ class ShogiGame {
         if (this._isTargetAvailable(target)) {
           moves.push({ from: coord, to: target, canPromote: false });
         }
+      }
+    } else if (piece.type === '歩') {  // 歩兵：前方1マス
+      const target = { row: coord.row + forward, col: coord.col };
+      if (this._isTargetAvailable(target)) {
+        moves.push({ from: coord, to: target, canPromote: this._canPromote(piece, coord, target) });
       }
     } else if (piece.type === '銀') {  // 銀：動きの例
       let directions;
@@ -320,6 +320,21 @@ class ShogiGame {
           c += d.dc;
         }
       }
+      if (piece.promoted) {
+        // 成り駒の場合、成れる場所を追加
+        if (this._isTargetAvailable({ row: coord.row + 1, col: coord.col })) {
+            moves.push({ from: coord, to: { row: coord.row + 1, col: coord.col }, canPromote: false });
+        }
+        if (this._isTargetAvailable({ row: coord.row - 1, col: coord.col })) {
+          moves.push({ from: coord, to: { row: coord.row - 1, col: coord.col }, canPromote: false });
+        }
+        if (this._isTargetAvailable({ row: coord.row, col: coord.col + 1 })) {
+          moves.push({ from: coord, to: { row: coord.row, col: coord.col + 1 }, canPromote: false });
+        }
+        if (this._isTargetAvailable({ row: coord.row, col: coord.col - 1 })) {
+          moves.push({ from: coord, to: { row: coord.row, col: coord.col - 1 }, canPromote: false });
+        }
+      }
       return moves;
     } else if (piece.type === '飛') {
       const directions = [
@@ -356,6 +371,21 @@ class ShogiGame {
           nc += d.dc;
         }
       }
+      if (piece.promoted) {
+        // 成り駒の場合、成れる場所を追加
+        if (this._isTargetAvailable({ row: coord.row + 1, col: coord.col + 1 })) {
+          moves.push({ from: coord, to: { row: coord.row + 1, col: coord.col + 1 }, canPromote: false });
+        }
+        if (this._isTargetAvailable({ row: coord.row + 1, col: coord.col - 1 })) {
+          moves.push({ from: coord, to: { row: coord.row + 1, col: coord.col - 1 }, canPromote: false });
+        }
+        if (this._isTargetAvailable({ row: coord.row - 1, col: coord.col + 1 })) {
+          moves.push({ from: coord, to: { row: coord.row - 1, col: coord.col + 1 }, canPromote: false });
+        }
+        if (this._isTargetAvailable({ row: coord.row - 1, col: coord.col - 1 })) {
+          moves.push({ from: coord, to: { row: coord.row - 1, col: coord.col - 1 }, canPromote: false });
+        }
+      }
       return moves;
     } else {
       console.warn(`getAvailableMovesはまだ実装されていません: ${piece.type}`);
@@ -365,6 +395,9 @@ class ShogiGame {
 
   // 移動元または移動先がプロモーションゾーンに入っていれば promotion が可能と判定（ただし王・金は不可）
   _canPromote(piece, from, to) {
+    if (piece.promoted) {
+      return false;
+    }
     if (piece.type === '王' || piece.type === '金') {
       return false;
     }
