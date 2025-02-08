@@ -60,6 +60,52 @@ app.post('/api/test', async (req, res) => {
   }
 });
 
+// 招待メール送信用のエンドポイント
+app.post('/api/invite', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // 基本的なバリデーション
+    if (!email || !email.includes('@')) {
+      return res.status(400).json({
+        success: false,
+        message: 'メールアドレスが無効です'
+      });
+    }
+
+    // トークン生成
+    const token = generateToken(email);
+
+    // メール送信
+    await sendEmail({
+      to: email,
+      subject: 'アプリへの招待',
+      text: `
+        アプリへ招待されました。
+        以下のリンクからアプリにアクセスしてください：
+        ${process.env.APP_URL}/register?email=${encodeURIComponent(email)}&token=${token}
+      `,
+      html: `
+        <p>アプリへ招待されました。</p>
+        <p>以下のリンクからアプリにアクセスしてください：</p>
+        <p><a href="${process.env.APP_URL}/register?email=${encodeURIComponent(email)}&token=${token}">アプリを開く</a></p>
+      `
+    });
+
+    res.json({
+      success: true,
+      message: '招待メールを送信しました'
+    });
+
+  } catch (error) {
+    console.error('招待処理でエラーが発生しました:', error);
+    res.status(500).json({
+      success: false,
+      message: 'メール送信に失敗しました'
+    });
+  }
+});
+
 // 404ページ
 app.get('*', (req, res) => {
   res.status(404).send('Not Found');
