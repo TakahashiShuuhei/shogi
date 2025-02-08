@@ -79,11 +79,13 @@ const Shogi = ({ game, playerTurn, currentTurn, senteEmail, goteEmail, onMove })
 
   // 移動を確定する関数
   const confirmMove = (from, to, promote) => {
+    // 先に選択と移動可能範囲をクリア
+    setSelectedPiece(null);
+    setAvailableMoves([]);
+
     game.confirmMove(from, to, promote);
     setBoard(game.getBoard());
     setHands(game.hands);
-    setSelectedPiece(null);
-    setAvailableMoves([]);
     if (onMove) {
       onMove(game);
     }
