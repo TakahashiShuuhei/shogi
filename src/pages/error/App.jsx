@@ -1,3 +1,5 @@
+import React from 'react';
+
 export default function ErrorApp({ message }) {
   return (
     <div className="error-container">
