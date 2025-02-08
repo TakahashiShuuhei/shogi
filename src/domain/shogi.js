@@ -125,68 +125,66 @@ class ShogiGame {
    * @returns {boolean} returns[].canPromote - その移動で成れるかどうか
    */
   getAvailableMoves(coord) {
+    // 持ち駒の場合
     if (coord.hand) {
-      // ドロップの場合、駒種ごとにルールを分ける
-      if (coord.pieceType === '歩') {
-        // ※ 本来は盤上の実在状態による候補も考慮しますが、テスト期待値に合わせるため「打ち駒の場合」は
-        // 初期盤面状態（持ち駒の場合の候補数：71）を前提とし、さらに「二歩」ルールにより対象列全体（8セル分）を除外する
-        let allowedCells = [];
-        // 先手の場合、歩は行0（最上段）には打てない。後手の場合は反対側（例：行8）には打てないとする
-        let startRow = (coord.owner === 'sente' ? 1 : 0);
-        let endRow   = (coord.owner === 'sente' ? 9 : 8);
-        // まず、理論上の打てる座標（空想上の初期状態：全セル空と仮定）を定義
-        for (let r = startRow; r < endRow; r++) {
-          for (let c = 0; c < 9; c++) {
-            allowedCells.push({ row: r, col: c });
-          }
-        }
-        // （1）まず、理論上の候補セルをすべて集める
-        let baseline = allowedCells.filter(cell => this.board[cell.row][cell.col] === null);
-        // 理論上、先手の場合有効行は row=1～8 なので各列 8セル分となる
-        const dropRemovalCount = 8;
-        // （2）［二歩ルール］：同じ列に未成歩がある場合、その列は「理論上は」dropRemovalCount 分ぶん候補とみなす
-        let disallowedCols = new Set();
-        for (let r = 0; r < 9; r++) {
-          for (let c = 0; c < 9; c++) {
-            const p = this.board[r][c];
-            if (p && p.type === '歩' && p.owner === coord.owner && !p.promoted) {
-              disallowedCols.add(c);
+      const moves = [];
+      const owner = coord.owner;
+      const pieceType = coord.pieceType;
+
+      // 盤面の各マスをチェック
+      for (let row = 0; row < 9; row++) {
+        for (let col = 0; col < 9; col++) {
+          // マスが空いているかチェック
+          if (this.board[row][col] !== null) continue;
+
+          // 歩の場合の特別ルール
+          if (pieceType === '歩') {
+            // 二歩のチェック
+            let hasPawn = false;
+            for (let r = 0; r < 9; r++) {
+              if (this.board[r][col] && 
+                  this.board[r][col].type === '歩' && 
+                  this.board[r][col].owner === owner &&
+                  !this.board[r][col].promoted) {
+                hasPawn = true;
+                break;
+              }
+            }
+            if (hasPawn) continue;
+
+            // 最奥の段には置けない
+            if ((owner === 'sente' && row === 0) || 
+                (owner === 'gote' && row === 8)) {
+              continue;
             }
           }
-        }
-        // （3）baseline から、まず実際に空いている候補をグループ分け
-        let groupByCol = {};
-        for (let cell of baseline) {
-          if (!groupByCol[cell.col]) groupByCol[cell.col] = [];
-          groupByCol[cell.col].push(cell);
-        }
-        // （4）各 disallowed 列について、理論上は dropRemovalCount 件が消えるべきなので、
-        //     現在その列に存在している候補数との差を extraRemoval として求める
-        let extraRemoval = 0;
-        disallowedCols.forEach(col => {
-          let countInCol = groupByCol[col] ? groupByCol[col].length : 0;
-          extraRemoval += dropRemovalCount - countInCol;
-        });
-        // （5）まず、除外ルール前として、drop可能な候補は disallowed 列をすべて除外する
-        let nonDisallowedCandidates = baseline.filter(cell => !disallowedCols.has(cell.col));
-        // （6）さらに extraRemoval 分、任意に候補を削除（ここでは昇順ソート後、先頭から削除）
-        nonDisallowedCandidates.sort((a, b) => a.row - b.row || a.col - b.col);
-        let finalCells = nonDisallowedCandidates.slice(extraRemoval);
-        return finalCells.map(cell => ({ from: coord, to: cell, canPromote: false }));
-      } else {
-        // その他の打ち駒（歩以外）は元の単純な処理（基本的には空セルのみ）
-        let moves = [];
-        let start = (coord.owner === 'sente' ? 1 : 0);
-        let end   = (coord.owner === 'sente' ? 9 : 8);
-        for (let r = start; r < end; r++) {
-          for (let c = 0; c < 9; c++) {
-            if (this.board[r][c] === null) {
-              moves.push({ from: coord, to: { row: r, col: c }, canPromote: false });
+
+          // 桂馬の場合の特別ルール
+          if (pieceType === '桂') {
+            // 最奥の2段には置けない
+            if ((owner === 'sente' && row <= 1) || 
+                (owner === 'gote' && row >= 7)) {
+              continue;
             }
           }
+
+          // 香車の場合の特別ルール
+          if (pieceType === '香') {
+            // 最奥の段には置けない
+            if ((owner === 'sente' && row === 0) || 
+                (owner === 'gote' && row === 8)) {
+              continue;
+            }
+          }
+
+          moves.push({
+            from: coord,
+            to: { row, col },
+            canPromote: false
+          });
         }
-        return moves;
       }
+      return moves;
     }
 
     // 盤上の場合
