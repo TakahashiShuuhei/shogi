@@ -1,5 +1,4 @@
-import React from 'react';
-import { hydrateRoot } from 'react-dom/client';
 import App from './App';
+import createPage from '../../client/createPage';
 
-hydrateRoot(document.getElementById('root'), <App />); 
+createPage(App); 

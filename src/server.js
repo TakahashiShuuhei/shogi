@@ -1,11 +1,11 @@
 import express from 'express';
 import React from 'react';
-import { renderToString } from 'react-dom/server';
 import path from 'path';
-import fs from 'fs';
+import renderPage from './server/renderPage';
 import HomeApp from './pages/home/App';
 import AboutApp from './pages/about/App';
 import ShogiTestApp from './pages/shogi-test/App';
+import { sql } from './lib/db';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -17,6 +17,25 @@ app.use('/public', express.static('public'));
 // APIエンドポイントの設定
 app.use(express.json());
 
+// ページルーティング
+app.get('/', renderPage(HomeApp, { pageName: 'home' }));
+app.get('/about', renderPage(AboutApp, { pageName: 'about' }));
+app.get('/shogi-test', async (req, res, next) => {
+  try {
+    const result = await sql`SELECT NOW()`;
+    const initialData = {
+      lastAccess: result[0].now
+    };
+    renderPage(ShogiTestApp, { 
+      pageName: 'shogi-test',
+      initialData 
+    })(req, res);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// APIエンドポイント
 app.post('/api/test', async (req, res) => {
   const { type } = req.body;
   
@@ -41,60 +60,6 @@ app.post('/api/test', async (req, res) => {
     console.error('テストエラー:', error);
     return res.status(500).json({ error: error.message });
   }
-});
-
-// Homeページ
-app.get('/', (req, res) => {
-  const html = renderToString(<HomeApp />);
-  
-  fs.readFile(path.resolve('./public/index.html'), 'utf-8', (err, data) => {
-    if (err) {
-      console.error('HTMLテンプレート読み込みエラー:', err);
-      return res.status(500).send('Internal Server Error');
-    }
-
-    const finalHtml = data
-      .replace('<div id="root"></div>', `<div id="root">${html}</div>`)
-      .replace('/build/client.js', '/build/home.js');  // スクリプトパスを変更
-
-    res.send(finalHtml);
-  });
-});
-
-// Aboutページ
-app.get('/about', (req, res) => {
-  const html = renderToString(<AboutApp />);
-  
-  fs.readFile(path.resolve('./public/index.html'), 'utf-8', (err, data) => {
-    if (err) {
-      console.error('HTMLテンプレート読み込みエラー:', err);
-      return res.status(500).send('Internal Server Error');
-    }
-
-    const finalHtml = data
-      .replace('<div id="root"></div>', `<div id="root">${html}</div>`)
-      .replace('/build/client.js', '/build/about.js');  // スクリプトパスを変更
-
-    res.send(finalHtml);
-  });
-});
-
-// 将棋テストページ
-app.get('/shogi-test', (req, res) => {
-  const html = renderToString(<ShogiTestApp />);
-  
-  fs.readFile(path.resolve('./public/index.html'), 'utf-8', (err, data) => {
-    if (err) {
-      console.error('HTMLテンプレート読み込みエラー:', err);
-      return res.status(500).send('Internal Server Error');
-    }
-
-    const finalHtml = data
-      .replace('<div id="root"></div>', `<div id="root">${html}</div>`)
-      .replace('/build/client.js', '/build/shogi-test.js');  // スクリプトパスを変更
-
-    res.send(finalHtml);
-  });
 });
 
 // 404ページ
