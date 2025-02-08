@@ -113,6 +113,10 @@ app.post('/api/invite', async (req, res) => {
 
     // トークン生成
     const token = generateToken(email);
+    let baseUrl = process.env.APP_URL;
+    if (baseUrl.endsWith('/')) {
+      baseUrl = baseUrl.slice(0, -1);
+    }
 
     // メール送信
     await sendEmail({
@@ -121,7 +125,7 @@ app.post('/api/invite', async (req, res) => {
       text: `
         アプリへ招待されました。
         以下のリンクからアプリにアクセスしてください：
-        ${process.env.APP_URL}/register?email=${encodeURIComponent(email)}&token=${token}
+        ${baseUrl}/register?email=${encodeURIComponent(email)}&token=${token}
       `,
       html: `
         <p>アプリへ招待されました。</p>
