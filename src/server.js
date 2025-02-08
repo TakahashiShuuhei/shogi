@@ -4,6 +4,8 @@ import HomeApp from './pages/home/App';
 import AboutApp from './pages/about/App';
 import ShogiTestApp from './pages/shogi-test/App';
 import InviteApp from './pages/invite/App';
+import ErrorApp from './pages/error/App';
+import RegisterApp from './pages/register/App';
 import { sql } from './lib/db';
 import { generateToken } from './lib/token';
 import { sendEmail } from './lib/mail';
@@ -37,6 +39,35 @@ app.get('/shogi-test', async (req, res, next) => {
 });
 
 app.get('/invite', renderPage(InviteApp, { pageName: 'invite' }));
+
+app.get('/register', (req, res) => {
+  const { email, token, gameId } = req.query;
+
+  // バリデーション
+  if (!email || !token) {
+    return res.redirect('/error?message=' + encodeURIComponent('無効なリンクです'));
+  }
+
+  // トークンの検証
+  const expectedToken = generateToken(email);
+  if (token !== expectedToken) {
+    return res.redirect('/error?message=' + encodeURIComponent('無効なリンクです'));
+  }
+
+  // 検証済みのデータをinitialDataとして渡す
+  renderPage(RegisterApp, { 
+    pageName: 'register',
+    initialData: { email, gameId }
+  })(req, res);
+});
+
+// エラーページ
+app.get('/error', (req, res) => {
+  renderPage(ErrorApp, { 
+    pageName: 'error',
+    initialData: { message: req.query.message }
+  })(req, res);
+});
 
 // APIエンドポイント
 app.post('/api/test', async (req, res) => {

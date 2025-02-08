@@ -12,7 +12,7 @@ export default function renderPage(Component, options = {}) {
   return (req, res) => {
     try {
       // データをpropsとして渡してレンダリング
-      const html = renderToString(<Component initialData={initialData} />);
+      const html = renderToString(<Component {...initialData} />);
       
       fs.readFile(path.resolve('./public/index.html'), 'utf-8', (err, data) => {
         if (err) {
@@ -22,17 +22,14 @@ export default function renderPage(Component, options = {}) {
 
         let finalHtml = data
           .replace('<div id="root"></div>', `<div id="root">${html}</div>`)
-          .replace('/build/client.js', `/build/${pageName}.js`);
-
-        // 初期データがある場合はクライアントに渡す
-        if (initialData) {
-          finalHtml = finalHtml.replace('</head>', `
-            <script>
-              window.__INITIAL_DATA__ = ${JSON.stringify(initialData)};
+          .replace('/build/client.js', `/build/${pageName}.js`)
+          .replace('<html>', `<html data-page-name="${pageName}">`)
+          .replace('</head>', `
+            <script id="initial-data" type="application/json">
+              ${JSON.stringify(initialData)}
             </script>
             </head>
           `);
-        }
 
         res.send(finalHtml);
       });
