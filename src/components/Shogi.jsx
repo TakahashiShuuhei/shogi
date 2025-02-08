@@ -131,9 +131,9 @@ const Shogi = ({ game, playerTurn, currentTurn, senteEmail, goteEmail, onMove })
       return '#FFFF00';
     }
     if (availableMoves.some(move => move.to.row === row && move.to.col === col)) {
-      return canControl ? '#90EE90' : '#ccc'; // 操作不可の場合は薄いグレー
+      return canControl ? '#90EE90' : '#f5f5f5';
     }
-    return '#FFE4B5';
+    return '#ede0d4';  // より暖かみのあるマスの色
   };
 
   // 駒台のコンポーネント
@@ -141,16 +141,17 @@ const Shogi = ({ game, playerTurn, currentTurn, senteEmail, goteEmail, onMove })
     <div style={{
       width: `${cellSize * 2}px`,
       minHeight: `${cellSize * 5}px`,
-      backgroundColor: '#DEB887',
+      backgroundColor: '#f8f9fa',
       padding: '8px',
-      border: '4px solid #855',
+      border: '1px solid #e0e0e0',
       borderRadius: '4px',
       margin: '8px',
       display: 'flex',
       flexWrap: 'wrap',
       gap: '4px',
       alignContent: isReversed ? 'flex-end' : 'flex-start',
-      alignSelf: isReversed ? 'flex-start' : 'flex-end'
+      alignSelf: isReversed ? 'flex-start' : 'flex-end',
+      boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
     }}>
       {pieces.map((piece, index) => (
         <div 
@@ -221,11 +222,12 @@ const Shogi = ({ game, playerTurn, currentTurn, senteEmail, goteEmail, onMove })
           display: 'grid',
           gridTemplateColumns: `repeat(9, ${cellSize}px)`,
           gap: '1px',
-          backgroundColor: '#ccc',
+          backgroundColor: '#e0e0e0',
           padding: '12px',
-          border: '8px solid #855',
+          border: '1px solid #d4a373',  // より柔らかい茶色のボーダー
           borderRadius: '4px',
-          boxShadow: '2px 2px 10px rgba(0,0,0,0.3)'
+          boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+          background: '#ddb892'  // 明るい木目色
         }}>
           {board.map((row, rowIndex) => 
             row.map((piece, colIndex) => (
