@@ -191,17 +191,43 @@ app.post('/api/games', async (req, res) => {
       values: [
         sente,
         gote,
-        JSON.stringify(initialState),  // 盤面状態
-        'playing',                     // 対局状態
-        'sente'                        // 手番
+        JSON.stringify(initialState),
+        'playing',
+        'sente'
       ]
     };
 
     const result = await client.query(query);
+    const gameId = result.rows[0].id;
+
+    // 対戦相手に招待メールを送信
+    const token = generateToken(opponent);
+    let baseUrl = process.env.APP_URL;
+    if (baseUrl.endsWith('/')) {
+      baseUrl = baseUrl.slice(0, -1);
+    }
+
+    await sendEmail({
+      to: opponent,
+      subject: '将棋の対局に招待されました',
+      text: `
+        ${userEmail}さんから将棋の対局に招待されました。
+        あなたは${gote === opponent ? '後手' : '先手'}です。
+
+        以下のリンクから対局を開始してください：
+        ${baseUrl}/register?email=${encodeURIComponent(opponent)}&token=${token}&gameId=${gameId}
+      `,
+      html: `
+        <p>${userEmail}さんから将棋の対局に招待されました。</p>
+        <p>あなたは<strong>${gote === opponent ? '後手' : '先手'}</strong>です。</p>
+        <p>以下のリンクから対局を開始してください：</p>
+        <p><a href="${baseUrl}/register?email=${encodeURIComponent(opponent)}&token=${token}&gameId=${gameId}">対局を開始する</a></p>
+      `
+    });
 
     res.json({
       success: true,
-      gameId: result.rows[0].id
+      gameId: gameId
     });
 
   } catch (error) {
