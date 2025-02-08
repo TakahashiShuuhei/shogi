@@ -8,7 +8,23 @@ export default function GameApp({ game }) {
   useEffect(() => {
     const email = localStorage.getItem('userEmail');
     setUserEmail(email);
-  }, []);
+
+    // ログインしていない場合はホームページへリダイレクト
+    if (!email) {
+      window.location.href = '/';
+      return;
+    }
+
+    // ログインしているが、この対局に参加していない場合もリダイレクト
+    if (email !== game.sente && email !== game.gote) {
+      window.location.href = '/';
+      return;
+    }
+  }, [game.sente, game.gote]);
+
+  if (!userEmail) {
+    return null;  // リダイレクト中は何も表示しない
+  }
 
   if (!game) {
     return <div>対局が見つかりません</div>;
