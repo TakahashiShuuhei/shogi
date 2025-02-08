@@ -39,7 +39,7 @@ export default function GameApp({ game }) {
         },
         body: JSON.stringify({
           board: updatedGame.exportState(),
-          turn: updatedGame.turn === 'sente' ? 'gote' : 'sente'
+          turn: updatedGame.turn
         })
       });
 

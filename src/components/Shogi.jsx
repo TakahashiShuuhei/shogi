@@ -50,7 +50,7 @@ const Shogi = ({ game, playerTurn, currentTurn, senteEmail, goteEmail, onMove })
       return;
     }
 
-    if (piece.owner === game.turn) {
+    if (piece.owner === currentTurn) {
       setSelectedPiece({ row, col });
       const moves = game.getAvailableMoves({ row, col });
       setAvailableMoves(moves);
@@ -65,7 +65,7 @@ const Shogi = ({ game, playerTurn, currentTurn, senteEmail, goteEmail, onMove })
     // 操作不可の場合は何もしない
     if (!canControl) return;
 
-    if (owner === game.turn) {
+    if (owner === currentTurn) {
       setSelectedPiece({ hand: true, owner, pieceType });
       const moves = game.getAvailableMoves({ hand: true, owner, pieceType });
       setAvailableMoves(moves);
@@ -156,7 +156,7 @@ const Shogi = ({ game, playerTurn, currentTurn, senteEmail, goteEmail, onMove })
             width: `${cellSize}px`,
             height: `${cellSize}px`,
             position: 'relative',
-            cursor: owner === game.turn ? 'pointer' : 'default',
+            cursor: owner === currentTurn ? 'pointer' : 'default',
             backgroundColor: selectedPiece?.hand && 
                            selectedPiece.owner === owner && 
                            selectedPiece.pieceType === piece.type ? 
