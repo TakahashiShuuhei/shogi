@@ -63,12 +63,12 @@ const Shogi = ({ game, playerTurn, currentTurn, senteEmail, goteEmail, onMove })
   };
 
   // 持ち駒がクリックされたときの処理
-  const handleHandPieceClick = (pieceType, owner) => {
+  const handleHandPieceClick = (pieceType, owner, index) => {
     // 操作不可の場合は何もしない
     if (!canControl) return;
 
     if (owner === currentTurn) {
-      setSelectedPiece({ hand: true, owner, pieceType });
+      setSelectedPiece({ hand: true, owner, pieceType, index });
       const moves = game.getAvailableMoves({ hand: true, owner, pieceType });
       setAvailableMoves(moves);
     } else {
@@ -155,7 +155,7 @@ const Shogi = ({ game, playerTurn, currentTurn, senteEmail, goteEmail, onMove })
       {pieces.map((piece, index) => (
         <div 
           key={`${piece.type}-${index}`}
-          onClick={() => handleHandPieceClick(piece.type, owner)}
+          onClick={() => handleHandPieceClick(piece.type, owner, index)}
           style={{
             width: `${cellSize}px`,
             height: `${cellSize}px`,
@@ -163,7 +163,8 @@ const Shogi = ({ game, playerTurn, currentTurn, senteEmail, goteEmail, onMove })
             cursor: owner === currentTurn ? 'pointer' : 'default',
             backgroundColor: selectedPiece?.hand && 
                            selectedPiece.owner === owner && 
-                           selectedPiece.pieceType === piece.type ? 
+                           selectedPiece.pieceType === piece.type &&
+                           selectedPiece.index === index ?  // インデックスも比較
                            '#FFFF00' : 'transparent'
           }}>
           <div style={{
