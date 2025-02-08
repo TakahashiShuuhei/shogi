@@ -1,6 +1,4 @@
 import express from 'express';
-import React from 'react';
-import path from 'path';
 import renderPage from './server/renderPage';
 import HomeApp from './pages/home/App';
 import AboutApp from './pages/about/App';
