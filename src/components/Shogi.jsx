@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import ShogiGame from '../domain/shogi';
 
 // PropTypesを使用しないバージョン
-const Shogi = ({ game, onStateChange }) => {
+const Shogi = ({ game }) => {
   const [board, setBoard] = useState(game.getBoard());
   const [hands, setHands] = useState(game.hands);
   const [selectedPiece, setSelectedPiece] = useState(null);
@@ -33,14 +33,6 @@ const Shogi = ({ game, onStateChange }) => {
     const y = -(row * 148);
 
     return { x, y };
-  };
-
-  // ゲームの状態が変更されたときの処理
-  const handleStateChange = () => {
-    setBoard(game.getBoard());
-    if (onStateChange) {
-      onStateChange(game);
-    }
   };
 
   // 駒がクリックされたときの処理
