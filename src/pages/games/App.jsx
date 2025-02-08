@@ -30,6 +30,30 @@ export default function GameApp({ game }) {
     playerTurn = 'gote';
   }
 
+  const handleMove = async (updatedGame) => {
+    try {
+      const response = await fetch(`/api/games/${game.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          board: updatedGame.exportState(),
+          turn: updatedGame.turn === 'sente' ? 'gote' : 'sente'
+        })
+      });
+
+      if (response.ok) {
+        // ページをリロード
+        window.location.reload();
+      } else {
+        console.error('移動の保存に失敗しました');
+      }
+    } catch (error) {
+      console.error('エラー:', error);
+    }
+  };
+
   return (
     <div>
       <div className="game-info">
@@ -46,6 +70,7 @@ export default function GameApp({ game }) {
         currentTurn={game.turn}
         senteEmail={game.sente}
         goteEmail={game.gote}
+        onMove={handleMove}
       />
 
       <style>{`

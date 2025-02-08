@@ -236,6 +236,29 @@ app.get('/games/:id', async (req, res) => {
   }
 });
 
+// 対局状態の更新
+app.put('/api/games/:id', async (req, res) => {
+  try {
+    const { board, turn } = req.body;
+
+    const query = {
+      text: 'UPDATE games SET board = $1, turn = $2 WHERE id = $3',
+      values: [JSON.stringify(board), turn, req.params.id]
+    };
+
+    await client.query(query);
+
+    res.json({ success: true });
+
+  } catch (error) {
+    console.error('対局更新エラー:', error);
+    res.status(500).json({
+      success: false,
+      message: 'エラーが発生しました'
+    });
+  }
+});
+
 // 404ページ
 app.get('*', (req, res) => {
   res.status(404).send('Not Found');

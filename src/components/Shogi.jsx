@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import ShogiGame from '../domain/shogi';
 
 // PropTypesを使用しないバージョン
-const Shogi = ({ game, playerTurn, currentTurn, senteEmail, goteEmail }) => {
+const Shogi = ({ game, playerTurn, currentTurn, senteEmail, goteEmail, onMove }) => {
   const [board, setBoard] = useState(game.getBoard());
   const [hands, setHands] = useState(game.hands);
   const [selectedPiece, setSelectedPiece] = useState(null);
@@ -92,8 +92,32 @@ const Shogi = ({ game, playerTurn, currentTurn, senteEmail, goteEmail }) => {
       // 移動可能なマス以外がクリックされた場合は選択解除
       setSelectedPiece(null);
       setAvailableMoves([]);
+      return;
     }
-    // TODO: 移動可能なマスがクリックされた場合の処理
+
+    // 移動を実行
+    const from = selectedPiece.hand ? 
+      { hand: true, owner: selectedPiece.owner, pieceType: selectedPiece.pieceType } :
+      { row: selectedPiece.row, col: selectedPiece.col };
+    
+    const to = { row, col };
+
+    // TODO: 成りの判定と選択UIの実装
+    const promote = false;
+
+    // 移動を確定
+    game.confirmMove(from, to, promote);
+
+    // 状態を更新
+    setBoard(game.getBoard());
+    setHands(game.hands);
+    setSelectedPiece(null);
+    setAvailableMoves([]);
+
+    // コールバックを呼び出し
+    if (onMove) {
+      onMove(game);
+    }
   };
 
   // マスの背景色を決定する関数
