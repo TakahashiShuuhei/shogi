@@ -1,27 +1,50 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 export default function HomeApp() {
-  const [userEmail, setUserEmail] = useState(null);
+  const [games, setGames] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [opponent, setOpponent] = useState('');
-  const [preferredTurn, setPreferredTurn] = useState('random'); // 'sente', 'gote', 'random'
-  const [status, setStatus] = useState('idle'); // idle, loading, error
-  const [errorMessage, setErrorMessage] = useState('');
+  const [preferredTurn, setPreferredTurn] = useState('random');
 
   useEffect(() => {
-    const email = localStorage.getItem('userEmail');
-    setUserEmail(email);
+    const fetchGames = async () => {
+      try {
+        const email = localStorage.getItem('userEmail');
+        if (!email) {
+          setLoading(false);
+          return;
+        }
+
+        const response = await fetch(`/api/games?email=${encodeURIComponent(email)}`);
+        const data = await response.json();
+
+        if (data.success) {
+          setGames(data.games);
+        } else {
+          setError(data.message);
+        }
+      } catch (error) {
+        console.error('対局一覧の取得に失敗:', error);
+        setError('対局一覧の取得に失敗しました');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGames();
   }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!userEmail) {
-      setStatus('error');
-      setErrorMessage('ログインが必要です');
-      return;
-    }
-
-    setStatus('loading');
+    
     try {
+      const userEmail = localStorage.getItem('userEmail');
+      if (!userEmail) {
+        setError('ログインが必要です');
+        return;
+      }
+
       const response = await fetch('/api/games', {
         method: 'POST',
         headers: {
@@ -30,129 +53,179 @@ export default function HomeApp() {
         body: JSON.stringify({
           userEmail,
           opponent,
-          preferredTurn,
-        }),
+          preferredTurn
+        })
       });
 
       const data = await response.json();
+
       if (data.success) {
-        // 作成された対局ページへリダイレクト
         window.location.href = `/games/${data.gameId}`;
       } else {
-        setStatus('error');
-        setErrorMessage(data.message || 'エラーが発生しました');
+        setError(data.message);
       }
     } catch (error) {
-      setStatus('error');
-      setErrorMessage('エラーが発生しました');
+      console.error('対局作成エラー:', error);
+      setError('対局の作成に失敗しました');
     }
   };
 
-  return (
-    <div>
-      <h1>ホームページ</h1>
-      <div className="login-status">
-        {userEmail ? (
-          <p>ログイン中のメールアドレス: {userEmail}</p>
-        ) : (
-          <p>ログインしていません</p>
-        )}
-      </div>
+  if (loading) {
+    return <div>読み込み中...</div>;
+  }
 
-      <div className="new-game-section">
+  if (error) {
+    return <div className="error">{error}</div>;
+  }
+
+  return (
+    <div className="home">
+      <h1>将棋アプリ</h1>
+
+      <div className="new-game">
         <h2>新規対局</h2>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="opponent">対戦相手のメールアドレス:</label>
+            <label>対戦相手のメールアドレス:</label>
             <input
               type="email"
-              id="opponent"
               value={opponent}
               onChange={(e) => setOpponent(e.target.value)}
               required
-              disabled={status === 'loading'}
             />
           </div>
-
           <div className="form-group">
-            <label htmlFor="preferredTurn">手番の希望:</label>
+            <label>希望の手番:</label>
             <select
-              id="preferredTurn"
               value={preferredTurn}
               onChange={(e) => setPreferredTurn(e.target.value)}
-              disabled={status === 'loading'}
             >
               <option value="random">ランダム</option>
               <option value="sente">先手</option>
               <option value="gote">後手</option>
             </select>
           </div>
-
-          <button 
-            type="submit"
-            disabled={status === 'loading' || !userEmail}
-          >
-            {status === 'loading' ? '作成中...' : '対局を作成'}
-          </button>
-
-          {status === 'error' && (
-            <div className="error-message">
-              {errorMessage}
-            </div>
-          )}
+          <button type="submit">対局を作成</button>
         </form>
+      </div>
+      
+      <div className="games-list">
+        <h2>参加中の対局</h2>
+        {games.length === 0 ? (
+          <p>参加中の対局はありません</p>
+        ) : (
+          <ul>
+            {games.map(game => (
+              <li key={game.id}>
+                <a href={`/games/${game.id}`} className="game-link">
+                  <div className="game-info">
+                    <div>
+                      <span className="label">先手:</span> {game.sente}
+                    </div>
+                    <div>
+                      <span className="label">後手:</span> {game.gote}
+                    </div>
+                    <div>
+                      <span className="label">状態:</span> {game.state}
+                    </div>
+                    <div>
+                      <span className="label">手番:</span> {game.turn === 'sente' ? '先手' : '後手'}
+                    </div>
+                  </div>
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <style>{`
-        .login-status {
-          margin: 20px 0;
-          padding: 10px;
-          background-color: #f5f5f5;
-          border-radius: 4px;
+        .home {
+          padding: 2rem;
+          max-width: 800px;
+          margin: 0 auto;
         }
 
-        .new-game-section {
-          margin: 20px 0;
-          padding: 20px;
+        .new-game {
+          margin: 2rem 0;
+          padding: 1rem;
           border: 1px solid #ddd;
           border-radius: 4px;
+          width: 100%;
         }
 
         .form-group {
-          margin-bottom: 15px;
+          margin-bottom: 1rem;
+          width: calc(100% - 100px);
+          margin-left: 50px;
+          margin-right: 50px;
         }
 
-        label {
+        .form-group label {
           display: block;
-          margin-bottom: 5px;
+          margin-bottom: 0.5rem;
         }
 
-        input, select {
+        .form-group input,
+        .form-group select {
           width: 100%;
-          padding: 8px;
-          font-size: 16px;
+          padding: 0.5rem;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          box-sizing: border-box;
+          font-size: 1em;
         }
 
-        button {
-          padding: 10px 20px;
-          font-size: 16px;
-          background-color: #007bff;
+        button[type="submit"] {
+          background-color: #4CAF50;
           color: white;
+          padding: 0.5rem 1rem;
           border: none;
           border-radius: 4px;
           cursor: pointer;
+          margin-left: 50px;
         }
 
-        button:disabled {
-          background-color: #ccc;
+        button:hover {
+          background-color: #45a049;
         }
 
-        .error-message {
-          margin-top: 10px;
-          padding: 10px;
-          color: #721c24;
-          background-color: #f8d7da;
+        .games-list {
+          margin-top: 2rem;
+        }
+
+        .game-link {
+          display: block;
+          padding: 1rem;
+          margin-bottom: 1rem;
+          border: 1px solid #ddd;
           border-radius: 4px;
+          text-decoration: none;
+          color: inherit;
+          transition: background-color 0.3s;
+        }
+
+        .game-link:hover {
+          background-color: #f5f5f5;
+        }
+
+        .game-info {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 0.5rem;
+        }
+
+        .label {
+          font-weight: bold;
+          margin-right: 0.5rem;
+        }
+
+        .error {
+          color: red;
+          padding: 1rem;
+          border: 1px solid red;
+          border-radius: 4px;
+          margin: 1rem 0;
         }
       `}</style>
     </div>

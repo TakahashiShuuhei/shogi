@@ -289,6 +289,44 @@ app.put('/api/games/:id', async (req, res) => {
   }
 });
 
+// 参加中の対局一覧を取得
+app.get('/api/games', async (req, res) => {
+  try {
+    const { email } = req.query;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'メールアドレスが必要です'
+      });
+    }
+
+    const query = {
+      text: `
+        SELECT * FROM games 
+        WHERE (sente = $1 OR gote = $1)
+        ORDER BY id DESC 
+        LIMIT 10
+      `,
+      values: [email]
+    };
+
+    const result = await client.query(query);
+
+    res.json({
+      success: true,
+      games: result.rows
+    });
+
+  } catch (error) {
+    console.error('対局一覧取得エラー:', error);
+    res.status(500).json({
+      success: false,
+      message: 'エラーが発生しました'
+    });
+  }
+});
+
 // 404ページ
 app.get('*', (req, res) => {
   res.status(404).send('Not Found');

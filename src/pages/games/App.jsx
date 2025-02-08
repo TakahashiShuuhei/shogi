@@ -56,12 +56,15 @@ export default function GameApp({ game }) {
 
   return (
     <div>
-      <div className="game-info">
-        <h1>対局 #{game.id}</h1>
-        <p>先手: {game.sente}{game.sente === userEmail && ' (あなた)'}</p>
-        <p>後手: {game.gote}{game.gote === userEmail && ' (あなた)'}</p>
-        <p>状態: {game.state}</p>
-        <p>手番: {game.turn === 'sente' ? '先手' : '後手'}</p>
+      <div className="game-header">
+        <a href="/" className="back-link">← 対局一覧へ戻る</a>
+        <div className="game-info">
+          <h1>対局 #{game.id}</h1>
+          <p>先手: {game.sente}{game.sente === userEmail && ' (あなた)'}</p>
+          <p>後手: {game.gote}{game.gote === userEmail && ' (あなた)'}</p>
+          <p>状態: {game.state}</p>
+          <p>手番: {game.turn === 'sente' ? '先手' : '後手'}</p>
+        </div>
       </div>
 
       <Shogi 
@@ -74,11 +77,28 @@ export default function GameApp({ game }) {
       />
 
       <style>{`
+        .game-header {
+          padding: 1rem 2rem;
+          border-bottom: 1px solid #ddd;
+          margin-bottom: 1rem;
+        }
+
+        .back-link {
+          display: inline-block;
+          padding: 0.5rem 1rem;
+          color: #666;
+          text-decoration: none;
+          font-size: 0.9em;
+          margin-bottom: 1rem;
+          transition: color 0.3s;
+        }
+
+        .back-link:hover {
+          color: #000;
+        }
+
         .game-info {
-          margin: 20px;
-          padding: 15px;
-          border: 1px solid #ddd;
-          border-radius: 4px;
+          margin-left: 1rem;
         }
       `}</style>
     </div>
