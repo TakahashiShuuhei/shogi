@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import ShogiGame from '../domain/shogi';
 
 // PropTypesを使用しないバージョン
 const Shogi = ({ game, playerTurn, currentTurn, senteEmail, goteEmail, onMove }) => {
   const [board, setBoard] = useState(game.getBoard());
   const [hands, setHands] = useState(game.hands);
+  const [debug, setDebug] = useState(false);
   const [selectedPiece, setSelectedPiece] = useState(null);
   const [availableMoves, setAvailableMoves] = useState([]);
   // 成り確認用の状態を追加
@@ -15,7 +15,7 @@ const Shogi = ({ game, playerTurn, currentTurn, senteEmail, goteEmail, onMove })
   const pieceScale = cellSize / 140 * 0.85;
 
   // 操作可能かどうかを判定
-  const canControl = playerTurn && playerTurn === currentTurn;
+  const canControl = debug ? true : playerTurn && playerTurn === currentTurn;
 
   // 駒の種類から画像の位置を計算する関数
   const getPieceImagePosition = (piece) => {
@@ -203,6 +203,18 @@ const Shogi = ({ game, playerTurn, currentTurn, senteEmail, goteEmail, onMove })
       alignItems: 'center',
       opacity: canControl ? 1 : 0.7
     }}>
+      {/* デバッグモード切り替え */}
+      <div className="debug-toggle">
+        <label>
+          <input
+            type="checkbox"
+            checked={debug}
+            onChange={(e) => setDebug(e.target.checked)}
+          />
+          デバッグモード
+        </label>
+      </div>
+
       {/* 後手のメールアドレス */}
       <div className={`player-email gote ${currentTurn === 'gote' ? 'current' : ''}`}>
         {goteEmail}
@@ -374,6 +386,32 @@ const Shogi = ({ game, playerTurn, currentTurn, senteEmail, goteEmail, onMove })
         .dialog-buttons button:last-child {
           background-color: #f44336;
           color: white;
+        }
+
+        .debug-toggle {
+          position: absolute;
+          top: 1rem;
+          right: 1rem;
+          padding: 0.5rem;
+          background-color: #f8f9fa;
+          border: 1px solid #e0e0e0;
+          border-radius: 4px;
+          font-size: 0.9em;
+          color: #666;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          cursor: pointer;
+        }
+
+        .debug-toggle input[type="checkbox"] {
+          margin: 0;
+          cursor: pointer;
+        }
+
+        .debug-toggle label {
+          cursor: pointer;
+          user-select: none;
         }
       `}</style>
     </div>
