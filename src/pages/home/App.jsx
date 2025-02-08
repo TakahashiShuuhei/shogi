@@ -6,16 +6,19 @@ export default function HomeApp() {
   const [error, setError] = useState(null);
   const [opponent, setOpponent] = useState('');
   const [preferredTurn, setPreferredTurn] = useState('random');
+  const [userEmail, setUserEmail] = useState(null);
 
   useEffect(() => {
+    const email = localStorage.getItem('userEmail');
+    setUserEmail(email);
+
+    if (!email) {
+      setLoading(false);
+      return;
+    }
+
     const fetchGames = async () => {
       try {
-        const email = localStorage.getItem('userEmail');
-        if (!email) {
-          setLoading(false);
-          return;
-        }
-
         const response = await fetch(`/api/games?email=${encodeURIComponent(email)}`);
         const data = await response.json();
 
@@ -39,7 +42,6 @@ export default function HomeApp() {
     e.preventDefault();
     
     try {
-      const userEmail = localStorage.getItem('userEmail');
       if (!userEmail) {
         setError('ログインが必要です');
         return;
@@ -72,6 +74,42 @@ export default function HomeApp() {
 
   if (loading) {
     return <div>読み込み中...</div>;
+  }
+
+  if (!userEmail) {
+    return (
+      <div className="home">
+        <h1>将棋アプリ</h1>
+        
+        <div className="login-message">
+          <p>ログインしていません。</p>
+          <p>以前に受け取った招待メールのリンクからログインしてください。</p>
+          <p>招待メールをお持ちでない場合は、他のユーザーからの招待をお待ちください。</p>
+        </div>
+
+        <style>{`
+          .home {
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+          }
+
+          .login-message {
+            margin: 2rem 0;
+            padding: 2rem;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            text-align: center;
+            line-height: 1.6;
+          }
+
+          .login-message p {
+            margin: 1rem 0;
+          }
+        `}</style>
+      </div>
+    );
   }
 
   if (error) {
