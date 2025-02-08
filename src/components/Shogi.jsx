@@ -128,12 +128,12 @@ const Shogi = ({ game, playerTurn, currentTurn, senteEmail, goteEmail, onMove })
   const getCellBackgroundColor = (row, col) => {
     if (selectedPiece && !selectedPiece.hand && 
         selectedPiece.row === row && selectedPiece.col === col) {
-      return '#FFFF00';
+      return '#fff3cd';  // より柔らかい黄色
     }
     if (availableMoves.some(move => move.to.row === row && move.to.col === col)) {
-      return canControl ? '#90EE90' : '#f5f5f5';
+      return canControl ? '#e8f5e9' : '#f5f5f5';  // より柔らかい緑
     }
-    return '#ede0d4';  // より暖かみのあるマスの色
+    return '#ede0d4';  // マスの基本色
   };
 
   // 駒台のコンポーネント
@@ -165,8 +165,8 @@ const Shogi = ({ game, playerTurn, currentTurn, senteEmail, goteEmail, onMove })
             backgroundColor: selectedPiece?.hand && 
                            selectedPiece.owner === owner && 
                            selectedPiece.pieceType === piece.type &&
-                           selectedPiece.index === index ?  // インデックスも比較
-                           '#FFFF00' : 'transparent'
+                           selectedPiece.index === index ? 
+                           '#fff3cd' : 'transparent'
           }}>
           <div style={{
             position: 'absolute',
@@ -379,12 +379,12 @@ const Shogi = ({ game, playerTurn, currentTurn, senteEmail, goteEmail, onMove })
         }
 
         .dialog-buttons button:first-child {
-          background-color: #4CAF50;
+          background-color: '#66bb6a';  // より柔らかい緑
           color: white;
         }
 
         .dialog-buttons button:last-child {
-          background-color: #f44336;
+          background-color: '#ef5350';  // より柔らかい赤
           color: white;
         }
 
