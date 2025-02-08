@@ -183,8 +183,14 @@ app.post('/api/games', async (req, res) => {
 
     // DBに保存
     const query = {
-      text: 'INSERT INTO games (sente, gote, board) VALUES ($1, $2, $3) RETURNING id',
-      values: [sente, gote, JSON.stringify(initialState)]
+      text: 'INSERT INTO games (sente, gote, board, state, turn) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+      values: [
+        sente,
+        gote,
+        JSON.stringify(initialState),  // 盤面状態
+        'playing',                     // 対局状態
+        'sente'                        // 手番
+      ]
     };
 
     const result = await client.query(query);
