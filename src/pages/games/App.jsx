@@ -44,6 +44,8 @@ export default function GameApp({ game }) {
         game={shogiGame} 
         playerTurn={playerTurn}
         currentTurn={game.turn}
+        senteEmail={game.sente}
+        goteEmail={game.gote}
       />
 
       <style>{`

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import ShogiGame from '../domain/shogi';
 
 // PropTypesを使用しないバージョン
-const Shogi = ({ game, playerTurn, currentTurn }) => {
+const Shogi = ({ game, playerTurn, currentTurn, senteEmail, goteEmail }) => {
   const [board, setBoard] = useState(game.getBoard());
   const [hands, setHands] = useState(game.hands);
   const [selectedPiece, setSelectedPiece] = useState(null);
@@ -171,9 +171,15 @@ const Shogi = ({ game, playerTurn, currentTurn }) => {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      opacity: canControl ? 1 : 0.7 // 操作不可の場合は全体を少し薄く
+      opacity: canControl ? 1 : 0.7
     }}>
       <h1>将棋盤</h1>
+
+      {/* 後手のメールアドレス */}
+      <div className="player-email gote">
+        {goteEmail}
+      </div>
+
       <div style={{
         display: 'flex',
         alignItems: 'stretch',
@@ -241,9 +247,27 @@ const Shogi = ({ game, playerTurn, currentTurn }) => {
         {/* 先手の駒台 */}
         <PieceStand pieces={hands.sente} owner="sente" isReversed={false} />
       </div>
-      <div style={{ marginTop: '1rem' }}>
-        <pre>{JSON.stringify(board, null, 2)}</pre>
+
+      {/* 先手のメールアドレス */}
+      <div className="player-email sente">
+        {senteEmail}
       </div>
+
+      <style>{`
+        .player-email {
+          margin: 8px 0;
+          padding: 4px 8px;
+          background-color: #f5f5f5;
+          border-radius: 4px;
+          font-size: 0.9em;
+        }
+        .player-email.gote {
+          margin-bottom: 16px;
+        }
+        .player-email.sente {
+          margin-top: 16px;
+        }
+      `}</style>
     </div>
   );
 };
