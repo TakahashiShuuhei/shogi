@@ -7,13 +7,15 @@ const Shogi = ({ game, playerTurn, currentTurn, senteEmail, goteEmail, onMove })
   const [hands, setHands] = useState(game.hands);
   const [selectedPiece, setSelectedPiece] = useState(null);
   const [availableMoves, setAvailableMoves] = useState([]);
+  // 成り確認用の状態を追加
+  const [promotionDialog, setPromotionDialog] = useState(null);
   
   // 固定サイズを設定
   const cellSize = 80;
   const pieceScale = cellSize / 140 * 0.85;
 
   // 操作可能かどうかを判定
-  const canControl = playerTurn && playerTurn === currentTurn;
+  const canControl = true; //playerTurn && playerTurn === currentTurn;
 
   // 駒の種類から画像の位置を計算する関数
   const getPieceImagePosition = (piece) => {
@@ -75,49 +77,51 @@ const Shogi = ({ game, playerTurn, currentTurn, senteEmail, goteEmail, onMove })
     }
   };
 
+  // 移動を確定する関数
+  const confirmMove = (from, to, promote) => {
+    game.confirmMove(from, to, promote);
+    setBoard(game.getBoard());
+    setHands(game.hands);
+    setSelectedPiece(null);
+    setAvailableMoves([]);
+    if (onMove) {
+      onMove(game);
+    }
+  };
+
   // マスがクリックされたときの処理
   const handleCellClick = (row, col) => {
-    // 駒が選択されていない場合は、駒のクリックとして処理
     if (!selectedPiece) {
       handlePieceClick(row, col);
       return;
     }
 
-    // 移動可能なマスがクリックされたかチェック
-    const isAvailableMove = availableMoves.some(
+    // 移動可能なマスとその情報を取得
+    const move = availableMoves.find(
       move => move.to.row === row && move.to.col === col
     );
 
-    if (!isAvailableMove) {
-      // 移動可能なマス以外がクリックされた場合は選択解除
+    if (!move) {
       setSelectedPiece(null);
       setAvailableMoves([]);
       return;
     }
 
-    // 移動を実行
     const from = selectedPiece.hand ? 
       { hand: true, owner: selectedPiece.owner, pieceType: selectedPiece.pieceType } :
       { row: selectedPiece.row, col: selectedPiece.col };
     
     const to = { row, col };
 
-    // TODO: 成りの判定と選択UIの実装
-    const promote = false;
-
-    // 移動を確定
-    game.confirmMove(from, to, promote);
-
-    // 状態を更新
-    setBoard(game.getBoard());
-    setHands(game.hands);
-    setSelectedPiece(null);
-    setAvailableMoves([]);
-
-    // コールバックを呼び出し
-    if (onMove) {
-      onMove(game);
+    // 成れるかどうかチェック
+    if (!selectedPiece.hand && move.canPromote) {  // 持ち駒からの配置は成れない
+      // 成り確認ダイアログを表示
+      setPromotionDialog({ from, to });
+      return;
     }
+
+    // 成れない場合はそのまま移動
+    confirmMove(from, to, false);
   };
 
   // マスの背景色を決定する関数
@@ -277,6 +281,33 @@ const Shogi = ({ game, playerTurn, currentTurn, senteEmail, goteEmail, onMove })
         {senteEmail}
       </div>
 
+      {/* 成り確認ダイアログ */}
+      {promotionDialog && (
+        <div className="promotion-dialog">
+          <div className="dialog-content">
+            <p>成りますか？</p>
+            <div className="dialog-buttons">
+              <button 
+                onClick={() => {
+                  confirmMove(promotionDialog.from, promotionDialog.to, true);
+                  setPromotionDialog(null);
+                }}
+              >
+                成る
+              </button>
+              <button 
+                onClick={() => {
+                  confirmMove(promotionDialog.from, promotionDialog.to, false);
+                  setPromotionDialog(null);
+                }}
+              >
+                成らない
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <style>{`
         .player-email {
           margin: 8px 0;
@@ -297,6 +328,51 @@ const Shogi = ({ game, playerTurn, currentTurn, senteEmail, goteEmail, onMove })
           border-left: 4px solid #ffc107;
           padding-left: 12px;
           font-weight: bold;
+        }
+
+        .promotion-dialog {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: rgba(0, 0, 0, 0.5);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 1000;
+        }
+
+        .dialog-content {
+          background-color: white;
+          padding: 20px;
+          border-radius: 8px;
+          text-align: center;
+        }
+
+        .dialog-buttons {
+          display: flex;
+          gap: 10px;
+          justify-content: center;
+          margin-top: 15px;
+        }
+
+        .dialog-buttons button {
+          padding: 8px 16px;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 16px;
+        }
+
+        .dialog-buttons button:first-child {
+          background-color: #4CAF50;
+          color: white;
+        }
+
+        .dialog-buttons button:last-child {
+          background-color: #f44336;
+          color: white;
         }
       `}</style>
     </div>
