@@ -200,7 +200,7 @@ const Shogi = ({ game, playerTurn, currentTurn, senteEmail, goteEmail, onMove })
       <h1>将棋盤</h1>
 
       {/* 後手のメールアドレス */}
-      <div className="player-email gote">
+      <div className={`player-email gote ${currentTurn === 'gote' ? 'current' : ''}`}>
         {goteEmail}
       </div>
 
@@ -273,7 +273,7 @@ const Shogi = ({ game, playerTurn, currentTurn, senteEmail, goteEmail, onMove })
       </div>
 
       {/* 先手のメールアドレス */}
-      <div className="player-email sente">
+      <div className={`player-email sente ${currentTurn === 'sente' ? 'current' : ''}`}>
         {senteEmail}
       </div>
 
@@ -284,12 +284,19 @@ const Shogi = ({ game, playerTurn, currentTurn, senteEmail, goteEmail, onMove })
           background-color: #f5f5f5;
           border-radius: 4px;
           font-size: 0.9em;
+          transition: all 0.3s ease;
         }
         .player-email.gote {
           margin-bottom: 16px;
         }
         .player-email.sente {
           margin-top: 16px;
+        }
+        .player-email.current {
+          background-color: #fff3cd;
+          border-left: 4px solid #ffc107;
+          padding-left: 12px;
+          font-weight: bold;
         }
       `}</style>
     </div>
