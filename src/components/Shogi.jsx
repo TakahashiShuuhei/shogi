@@ -15,7 +15,7 @@ const Shogi = ({ game, playerTurn, currentTurn, senteEmail, goteEmail, onMove })
   const pieceScale = cellSize / 140 * 0.85;
 
   // 操作可能かどうかを判定
-  const canControl = true; //playerTurn && playerTurn === currentTurn;
+  const canControl = playerTurn && playerTurn === currentTurn;
 
   // 駒の種類から画像の位置を計算する関数
   const getPieceImagePosition = (piece) => {
