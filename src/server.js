@@ -271,12 +271,42 @@ app.put('/api/games/:id', async (req, res) => {
   try {
     const { board, turn } = req.body;
 
-    const query = {
+    // まず対局情報を取得
+    const getGameQuery = {
+      text: 'SELECT * FROM games WHERE id = $1',
+      values: [req.params.id]
+    };
+    const gameResult = await client.query(getGameQuery);
+    const game = gameResult.rows[0];
+
+    // 更新クエリを実行
+    const updateQuery = {
       text: 'UPDATE games SET board = $1, turn = $2 WHERE id = $3',
       values: [JSON.stringify(board), turn, req.params.id]
     };
+    await client.query(updateQuery);
 
-    await client.query(query);
+    // 手番が変わった相手にメール送信
+    const nextPlayer = turn === 'sente' ? game.sente : game.gote;
+    let baseUrl = process.env.APP_URL;
+    if (baseUrl.endsWith('/')) {
+      baseUrl = baseUrl.slice(0, -1);
+    }
+
+    await sendEmail({
+      to: nextPlayer,
+      subject: '将棋の手番が来ました',
+      text: `
+        対局 #${game.id} で、あなたの手番になりました。
+        以下のリンクから対局を確認してください：
+        ${baseUrl}/games/${game.id}
+      `,
+      html: `
+        <p>対局 #${game.id} で、あなたの手番になりました。</p>
+        <p>以下のリンクから対局を確認してください：</p>
+        <p><a href="${baseUrl}/games/${game.id}">対局を確認する</a></p>
+      `
+    });
 
     res.json({ success: true });
 
