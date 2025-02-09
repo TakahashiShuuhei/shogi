@@ -238,16 +238,20 @@ describe('ShogiGame', () => {
           name: '歩 (sente, promoted)',
           piece: { type: '歩', owner: 'sente', promoted: true },
           coord: { row: 6, col: 1 },
-          expected: [{ row: 5, col: 1 }]
+          expected: [
+            { row: 5, col: 0 }, { row: 5, col: 1 }, { row: 5, col: 2 },
+            { row: 6, col: 0 }, { row: 6, col: 2 },
+            { row: 7, col: 1 }
+          ]
         },
         {
           name: '銀 (gote, promoted)',
           piece: { type: '銀', owner: 'gote', promoted: true },
           coord: { row: 4, col: 5 },
           expected: [
-            // gote silver の動きは、非成の場合と同じとみなす
+            { row: 3, col: 5 },
+            { row: 4, col: 4 }, { row: 4, col: 6 },
             { row: 5, col: 4 }, { row: 5, col: 5 }, { row: 5, col: 6 },
-            { row: 3, col: 4 }, { row: 3, col: 6 }
           ]
         }
       ];
@@ -303,8 +307,8 @@ describe('ShogiGame', () => {
       // まず、col 0 への打ち駒が存在しないことをチェック
       const illegalDrops = handMoves.filter(move => move.to.col === 0);
       expect(illegalDrops.length).toBe(0);
-      // 結果、全体の打ち駒候補数は先の 71 から col0（8セル分）が除かれる ⇒ 71 - 8 = 63
-      expect(handMoves.length).toBe(63);
+      // 結果、全体の打ち駒候補数は先の 72 から col0（8セル分）が除かれる ⇒ 72 - 8 = 64
+      expect(handMoves.length).toBe(64);
     });
 
     it('香車の前方に味方の駒がある場合、移動先が制限される', () => {
