@@ -253,6 +253,61 @@ describe('ShogiGame', () => {
             { row: 4, col: 4 }, { row: 4, col: 6 },
             { row: 5, col: 4 }, { row: 5, col: 5 }, { row: 5, col: 6 },
           ]
+        },
+        {
+          name: '香 (sente, promoted)',
+          piece: { type: '香', owner: 'sente', promoted: true },
+          coord: { row: 4, col: 4 },
+          expected: [
+            { row: 3, col: 3 }, { row: 3, col: 4 }, { row: 3, col: 5 },
+            { row: 4, col: 3 }, { row: 4, col: 5 },
+            { row: 5, col: 4 }
+          ]
+        },
+        {
+          name: '桂 (gote, promoted)',
+          piece: { type: '桂', owner: 'gote', promoted: true },
+          coord: { row: 3, col: 3 },
+          expected: [
+            { row: 2, col: 3 },
+            { row: 3, col: 2 }, { row: 3, col: 4 },
+            { row: 4, col: 2 }, { row: 4, col: 3 }, { row: 4, col: 4 }
+          ]
+        },
+        {
+          name: '飛 (gote, promoted)',
+          piece: { type: '飛', owner: 'gote', promoted: true },
+          coord: { row: 5, col: 5 },
+          expected: [
+            // 縦
+            { row: 4, col: 5 }, { row: 3, col: 5 }, { row: 2, col: 5 }, { row: 1, col: 5 }, { row: 0, col: 5 },
+            { row: 6, col: 5 }, { row: 7, col: 5 }, { row: 8, col: 5 },
+            // 横
+            { row: 5, col: 4 }, { row: 5, col: 3 }, { row: 5, col: 2 }, { row: 5, col: 1 }, { row: 5, col: 0 },
+            { row: 5, col: 6 }, { row: 5, col: 7 }, { row: 5, col: 8 },
+            // 斜め1マス（成り駒の追加の動き）
+            { row: 4, col: 4 }, { row: 4, col: 6 },
+            { row: 6, col: 4 }, { row: 6, col: 6 }
+          ]
+        },
+        {
+          name: '角 (sente, promoted)',
+          piece: { type: '角', owner: 'sente', promoted: true },
+          coord: { row: 4, col: 4 },
+          expected: [
+            // 斜め
+            // top-left
+            { row: 3, col: 3 }, { row: 2, col: 2 }, { row: 1, col: 1 }, { row: 0, col: 0 },
+            // top-right
+            { row: 3, col: 5 }, { row: 2, col: 6 }, { row: 1, col: 7 }, { row: 0, col: 8 },
+            // bottom-left
+            { row: 5, col: 3 }, { row: 6, col: 2 }, { row: 7, col: 1 }, { row: 8, col: 0 },
+            // bottom-right
+            { row: 5, col: 5 }, { row: 6, col: 6 }, { row: 7, col: 7 }, { row: 8, col: 8 },
+            // 上下左右1マス（成り駒の追加の動き）
+            { row: 3, col: 4 }, { row: 5, col: 4 },
+            { row: 4, col: 3 }, { row: 4, col: 5 }
+          ]
         }
       ];
       
@@ -267,7 +322,8 @@ describe('ShogiGame', () => {
         const moves = game.getAvailableMoves(coord);
         // 取得した各移動先の 'to' 座標のみ抽出
         const actual = moves.map(m => m.to);
-        expect(actual.sort(sortFn)).toEqual(expected.sort(sortFn));
+        expect.soft(actual.sort(sortFn), `${name} の移動範囲が正しくありません`)
+          .toEqual(expected.sort(sortFn));
         // 次のテストのため、セルをクリア
         game.board[coord.row][coord.col] = null;
       });
