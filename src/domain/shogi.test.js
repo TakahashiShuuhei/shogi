@@ -604,5 +604,32 @@ describe('ShogiGame', () => {
       const sortFn = (a, b) => a.row - b.row || a.col - b.col;
       expect(available.sort(sortFn)).toEqual(expected.sort(sortFn));
     });
+
+    it('桂馬は打ち駒の制限がある', () => {
+      game.board = Array.from({ length: 9 }, () => Array(9).fill(null));
+      
+      // 先手の桂馬は1,2段目には打てない
+      const senteKnightMoves = game.getAvailableMoves({ 
+        hand: true, 
+        owner: 'sente', 
+        pieceType: '桂' 
+      });
+      const illegalSenteMoves = senteKnightMoves.filter(move => move.to.row <= 1);
+      expect(illegalSenteMoves, '先手の桂馬は1,2段目に打てない').toHaveLength(0);
+      
+      // 後手の桂馬は8,9段目には打てない
+      const goteKnightMoves = game.getAvailableMoves({ 
+        hand: true, 
+        owner: 'gote', 
+        pieceType: '桂' 
+      });
+      const illegalGoteMoves = goteKnightMoves.filter(move => move.to.row >= 7);
+      expect(illegalGoteMoves, '後手の桂馬は8,9段目に打てない').toHaveLength(0);
+
+      // 打てる場所の総数も確認
+      // 9x9=81マスから、打てない段（先手2段、後手2段）を引く
+      expect(senteKnightMoves.length).toBe(81 - 18); // 18 = 9列 x 2段
+      expect(goteKnightMoves.length).toBe(81 - 18);
+    });
   });
 });
