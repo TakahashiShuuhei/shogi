@@ -185,6 +185,22 @@ describe('ShogiGame', () => {
           ]
         },
         {
+          name: '桂 (sente, can promote)',
+          piece: { type: '桂', owner: 'sente', promoted: false },
+          coord: { row: 4, col: 4 },
+          expected: [
+            { row: 2, col: 3, canPromote: true }, { row: 2, col: 5, canPromote: true }
+          ]
+        },
+        {
+          name: '桂 (gote, can promote)',
+          piece: { type: '桂', owner: 'gote', promoted: false },
+          coord: { row: 5, col: 4 },
+          expected: [
+            { row: 7, col: 3, canPromote: true }, { row: 7, col: 5, canPromote: true }
+          ]
+        },
+        {
           name: '香 (sente)',
           piece: { type: '香', owner: 'sente', promoted: false },
           coord: { row: 6, col: 4 },
@@ -310,11 +326,56 @@ describe('ShogiGame', () => {
           ]
         },
         {
-          name: '歩 (sente)',
+          name: '歩 (sente, can promote)',
           piece: { type: '歩', owner: 'sente', promoted: false },
           coord: { row: 3, col: 0 },
           expected: [
             { row: 2, col: 0, canPromote: true }  // 3段目から2段目への移動は成れる
+          ]
+        },
+        {
+          name: '歩 (gote, can promote)',
+          piece: { type: '歩', owner: 'gote', promoted: false },
+          coord: { row: 5, col: 0 },
+          expected: [
+            { row: 6, col: 0, canPromote: true }  // 5段目から6段目への移動は成れる
+          ]
+        },
+        {
+          name: '飛 (sente, from promotion zone)',
+          piece: { type: '飛', owner: 'sente', promoted: false },
+          coord: { row: 1, col: 4 },  // 2段目にいる飛車
+          expected: [
+            // Up
+            { row: 0, col: 4, canPromote: true },
+            // Down
+            { row: 2, col: 4, canPromote: true }, { row: 3, col: 4, canPromote: true }, 
+            { row: 4, col: 4, canPromote: true }, { row: 5, col: 4, canPromote: true },
+            { row: 6, col: 4, canPromote: true }, { row: 7, col: 4, canPromote: true }, 
+            { row: 8, col: 4, canPromote: true },
+            // Left
+            { row: 1, col: 3, canPromote: true }, { row: 1, col: 2, canPromote: true }, 
+            { row: 1, col: 1, canPromote: true }, { row: 1, col: 0, canPromote: true },
+            // Right
+            { row: 1, col: 5, canPromote: true }, { row: 1, col: 6, canPromote: true }, 
+            { row: 1, col: 7, canPromote: true }, { row: 1, col: 8, canPromote: true }
+          ]
+        },
+        {
+          name: '角 (gote, from promotion zone)',
+          piece: { type: '角', owner: 'gote', promoted: false },
+          coord: { row: 7, col: 4 },  // 8段目にいる角
+          expected: [
+            // top-left
+            { row: 6, col: 3, canPromote: true }, { row: 5, col: 2, canPromote: true }, 
+            { row: 4, col: 1, canPromote: true }, { row: 3, col: 0, canPromote: true },
+            // top-right
+            { row: 6, col: 5, canPromote: true }, { row: 5, col: 6, canPromote: true }, 
+            { row: 4, col: 7, canPromote: true }, { row: 3, col: 8, canPromote: true },
+            // bottom-left
+            { row: 8, col: 3, canPromote: true },
+            // bottom-right
+            { row: 8, col: 5, canPromote: true }
           ]
         }
       ];
