@@ -273,10 +273,10 @@ class ShogiGame {
       if (piece.owner === 'sente') {
         for (let r = coord.row - 1; r >= 0; r--) {
            if (this.board[r][coord.col] === null) {
-              moves.push({ from: coord, to: { row: r, col: coord.col }, canPromote: false });
+              moves.push({ from: coord, to: { row: r, col: coord.col }, canPromote: this._canPromote(piece, coord, { row: r, col: coord.col })  });
            } else {
               if (this.board[r][coord.col].owner !== piece.owner) {
-                 moves.push({ from: coord, to: { row: r, col: coord.col }, canPromote: false });
+                 moves.push({ from: coord, to: { row: r, col: coord.col }, canPromote: this._canPromote(piece, coord, { row: r, col: coord.col })  });
               }
               break;
            }
@@ -284,10 +284,10 @@ class ShogiGame {
       } else { // gote
         for (let r = coord.row + 1; r < 9; r++) {
            if (this.board[r][coord.col] === null) {
-              moves.push({ from: coord, to: { row: r, col: coord.col }, canPromote: false });
+              moves.push({ from: coord, to: { row: r, col: coord.col }, canPromote: this._canPromote(piece, coord, { row: r, col: coord.col })  });
            } else {
               if (this.board[r][coord.col].owner !== piece.owner) {
-                 moves.push({ from: coord, to: { row: r, col: coord.col }, canPromote: false });
+                 moves.push({ from: coord, to: { row: r, col: coord.col }, canPromote: this._canPromote(piece, coord, { row: r, col: coord.col })  });
               }
               break;
            }

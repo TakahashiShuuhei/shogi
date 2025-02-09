@@ -191,7 +191,7 @@ describe('ShogiGame', () => {
           // sente は上方向（dr = -1）へ連続移動可能。境界は row 0
           expected: [
             { row: 5, col: 4 }, { row: 4, col: 4 }, { row: 3, col: 4 },
-            { row: 2, col: 4 }, { row: 1, col: 4 }, { row: 0, col: 4 }
+            { row: 2, col: 4, canPromote: true }, { row: 1, col: 4, canPromote: true }, { row: 0, col: 4, canPromote: true }
           ]
         },
         {
@@ -201,7 +201,7 @@ describe('ShogiGame', () => {
           // gote は下方向（dr = 1）へ連続移動可能。境界は row 8 
           expected: [
             { row: 3, col: 4 }, { row: 4, col: 4 }, { row: 5, col: 4 },
-            { row: 6, col: 4 }, { row: 7, col: 4 }, { row: 8, col: 4 }
+            { row: 6, col: 4, canPromote: true }, { row: 7, col: 4, canPromote: true }, { row: 8, col: 4, canPromote: true }
           ]
         },
         {
@@ -210,9 +210,9 @@ describe('ShogiGame', () => {
           coord: { row: 4, col: 4 },
           expected: [
             // top-left
-            { row: 3, col: 3 }, { row: 2, col: 2 }, { row: 1, col: 1 }, { row: 0, col: 0 },
+            { row: 3, col: 3 }, { row: 2, col: 2, canPromote: true }, { row: 1, col: 1, canPromote: true }, { row: 0, col: 0, canPromote: true },
             // top-right
-            { row: 3, col: 5 }, { row: 2, col: 6 }, { row: 1, col: 7 }, { row: 0, col: 8 },
+            { row: 3, col: 5 }, { row: 2, col: 6, canPromote: true }, { row: 1, col: 7, canPromote: true }, { row: 0, col: 8, canPromote: true },
             // bottom-left
             { row: 5, col: 3 }, { row: 6, col: 2 }, { row: 7, col: 1 }, { row: 8, col: 0 },
             // bottom-right
@@ -225,11 +225,11 @@ describe('ShogiGame', () => {
           coord: { row: 4, col: 4 },
           expected: [
             // Up
-            { row: 3, col: 4 }, { row: 2, col: 4 }, { row: 1, col: 4 }, { row: 0, col: 4 },
+            { row: 3, col: 4 }, { row: 2, col: 4, canPromote: true }, { row: 1, col: 4, canPromote: true }, { row: 0, col: 4, canPromote: true },
             // Down
             { row: 5, col: 4 }, { row: 6, col: 4 }, { row: 7, col: 4 }, { row: 8, col: 4 },
             // Left
-            { row: 4, col: 3 }, { row: 4, col: 2 }, { row: 4, col: 1 }, { row: 4, col: 0 },
+            { row: 4, col: 3 }, { row: 4, col: 2, }, { row: 4, col: 1 }, { row: 4, col: 0 },
             // Right
             { row: 4, col: 5 }, { row: 4, col: 6 }, { row: 4, col: 7 }, { row: 4, col: 8 }
           ]
@@ -308,6 +308,14 @@ describe('ShogiGame', () => {
             { row: 3, col: 4 }, { row: 5, col: 4 },
             { row: 4, col: 3 }, { row: 4, col: 5 }
           ]
+        },
+        {
+          name: '歩 (sente)',
+          piece: { type: '歩', owner: 'sente', promoted: false },
+          coord: { row: 3, col: 0 },
+          expected: [
+            { row: 2, col: 0, canPromote: true }  // 3段目から2段目への移動は成れる
+          ]
         }
       ];
       
@@ -320,10 +328,22 @@ describe('ShogiGame', () => {
         game.board[coord.row][coord.col] = { ...piece };
         // 指定座標から移動先一覧を取得
         const moves = game.getAvailableMoves(coord);
-        // 取得した各移動先の 'to' 座標のみ抽出
-        const actual = moves.map(m => m.to);
+        
+        // 期待値に canPromote が指定されていない場合は false とみなす
+        const expectedWithPromote = expected.map(e => 
+          typeof e.canPromote === 'undefined' ? { ...e, canPromote: false } : e
+        );
+
+        // 取得した移動先を比較用に整形
+        const actual = moves.map(m => ({
+          row: m.to.row,
+          col: m.to.col,
+          canPromote: m.canPromote
+        }));
+
         expect.soft(actual.sort(sortFn), `${name} の移動範囲が正しくありません`)
-          .toEqual(expected.sort(sortFn));
+          .toEqual(expectedWithPromote.sort(sortFn));
+
         // 次のテストのため、セルをクリア
         game.board[coord.row][coord.col] = null;
       });
